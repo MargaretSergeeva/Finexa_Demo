@@ -1,0 +1,325 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finexa · Data Pipeline Architecture</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+    body { font-family: 'IBM Plex Sans', system-ui, sans-serif; }
+    .mono { font-family: 'IBM Plex Mono', monospace; }
+    .stage {
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      background: white;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .stage-header {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 8px 14px;
+      border-radius: 11px 11px 0 0;
+      color: white;
+    }
+    .arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #64748b;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .agent {
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 12px;
+    }
+    .human {
+      background: #fef3c7;
+      border: 1px solid #f59e0b;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+  <header class="bg-white border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-6 py-5">
+      <h1 class="text-xl font-bold text-slate-900">Finexa · Data Pipeline Architecture</h1>
+      <p class="text-sm text-slate-500 mt-0.5">AI-Augmented Feedback Intelligence · Payments Domain</p>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-6 py-8 space-y-10">
+
+    <!-- High-level flow -->
+    <section>
+      <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">End-to-End Flow</h2>
+      
+      <div class="flex flex-col gap-3">
+
+        <!-- 1. Ingest -->
+        <div class="stage">
+          <div class="stage-header bg-slate-700">1 · Ingest</div>
+          <div class="p-4 grid grid-cols-1 md:grid-cols-4 gap-3 text-sm">
+            <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
+              <div class="font-medium text-slate-800">CRM</div>
+              <div class="text-xs text-slate-500 mt-1">Salesforce / HubSpot notes</div>
+            </div>
+            <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
+              <div class="font-medium text-slate-800">Support</div>
+              <div class="text-xs text-slate-500 mt-1">Zendesk / Intercom tickets</div>
+            </div>
+            <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
+              <div class="font-medium text-slate-800">Interviews</div>
+              <div class="text-xs text-slate-500 mt-1">Call notes, research</div>
+            </div>
+            <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
+              <div class="font-medium text-slate-800">Other</div>
+              <div class="text-xs text-slate-500 mt-1">NPS, surveys, Slack</div>
+            </div>
+          </div>
+          <div class="px-4 pb-3 text-xs text-slate-500">→ Written to <span class="mono">raw_feedback</span></div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <!-- 2. De-identify -->
+        <div class="stage">
+          <div class="stage-header bg-slate-600">2 · De-identify</div>
+          <div class="p-4 flex flex-wrap items-center gap-4 text-sm">
+            <div class="agent">
+              <span class="font-medium">Google Cloud DLP</span>
+              <div class="text-xs text-slate-500 mt-0.5">PII removal / masking</div>
+            </div>
+            <div class="text-slate-400">→</div>
+            <div class="text-slate-600">Clean text stored back on <span class="mono">raw_feedback.raw_text</span></div>
+          </div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <!-- 3. Structure -->
+        <div class="stage">
+          <div class="stage-header bg-blue-800">3 · Structure (LLM Agent 1)</div>
+          <div class="p-4 space-y-3 text-sm">
+            <div class="flex flex-wrap gap-3 items-start">
+              <div class="agent">
+                <span class="font-medium">LLM Structuring Agent</span>
+                <div class="text-xs text-slate-500 mt-0.5">Extracts summary, pain points, root cause, theme, severity, segment…</div>
+              </div>
+              <div class="text-slate-400">→</div>
+              <div>
+                <div class="font-medium text-slate-800">Writes to <span class="mono">processed_insights</span></div>
+                <div class="text-xs text-slate-500 mt-0.5">+ generates embedding (VECTOR)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <!-- 4. Match -->
+        <div class="stage">
+          <div class="stage-header bg-blue-700">4 · Match (Vector + LLM)</div>
+          <div class="p-4 space-y-3 text-sm">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
+                <div class="font-medium">Vector Search</div>
+                <div class="text-xs text-slate-500 mt-1">Find similar opportunities in <span class="mono">insight_repository</span> using embedding</div>
+              </div>
+              <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
+                <div class="font-medium">LLM Re-ranker</div>
+                <div class="text-xs text-slate-500 mt-1">Reads candidates + insight → decides match confidence + reason</div>
+              </div>
+            </div>
+            <div class="text-xs text-slate-500">→ Results written to <span class="mono">candidate_shortlist</span> (score, rank, llm_match_reason)</div>
+          </div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <!-- 5. Gate 1 -->
+        <div class="stage border-amber-300">
+          <div class="stage-header bg-amber-600">5 · Human Gate 1 — Confirm Insight & Opportunity</div>
+          <div class="p-4 space-y-3 text-sm">
+            <div class="human inline-block">Human decides</div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2">
+              <div class="bg-white border border-slate-200 rounded-lg p-2.5 text-xs">
+                <strong>Accept & attach</strong><br>Link to existing opportunity
+              </div>
+              <div class="bg-white border border-slate-200 rounded-lg p-2.5 text-xs">
+                <strong>Create new</strong><br>New opportunity is born
+              </div>
+              <div class="bg-white border border-slate-200 rounded-lg p-2.5 text-xs">
+                <strong>Reject</strong><br>Archive the insight
+              </div>
+            </div>
+            <div class="text-xs text-slate-500 mt-2">
+              Writes to <span class="mono">gate_decisions</span> · updates <span class="mono">processed_insights</span> · creates/updates <span class="mono">insight_repository</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <!-- 6. Score -->
+        <div class="stage">
+          <div class="stage-header bg-indigo-700">6 · Score (Deterministic)</div>
+          <div class="p-4 text-sm space-y-2">
+            <div class="flex flex-wrap gap-3 items-center">
+              <div class="agent">
+                <span class="font-medium">Scoring Engine</span>
+                <div class="text-xs text-slate-500 mt-0.5">Uses <span class="mono">scoring_weights</span> + <span class="mono">strategic_priorities</span></div>
+              </div>
+              <div class="text-slate-400">→</div>
+              <div>
+                <div><span class="mono">priority_score</span> + <span class="mono">priority_explanation</span></div>
+                <div class="text-xs text-slate-500">Status moves to <strong>logged</strong> then <strong>prioritized</strong></div>
+              </div>
+            </div>
+            <div class="text-xs text-slate-500">Re-scoring can happen anytime (new insights, weight changes) without changing status.</div>
+          </div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <!-- 7. Gate 2 -->
+        <div class="stage border-amber-300">
+          <div class="stage-header bg-amber-600">7 · Human Gate 2 — Approve for Engineering</div>
+          <div class="p-4 text-sm space-y-2">
+            <div class="human inline-block">Human reviews score explanation</div>
+            <div class="text-xs text-slate-600 mt-1">Approves opportunity → sets <span class="mono">approved_for_drafting = true</span></div>
+            <div class="text-xs text-slate-500">Logged in <span class="mono">gate_decisions</span></div>
+          </div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <!-- 8. Draft -->
+        <div class="stage">
+          <div class="stage-header bg-slate-700">8 · Draft Jira Ticket (LLM Agent 2)</div>
+          <div class="p-4 text-sm space-y-2">
+            <div class="agent inline-block">
+              <span class="font-medium">Engineering Draft Agent</span>
+              <div class="text-xs text-slate-500 mt-0.5">Creates problem statement, user story, acceptance criteria, complexity estimate</div>
+            </div>
+            <div class="text-xs text-slate-500 mt-1">→ Writes to <span class="mono">jira_tickets</span> (status = draft)</div>
+          </div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <!-- 9. Gate 3 -->
+        <div class="stage border-amber-300">
+          <div class="stage-header bg-amber-600">9 · Human Gate 3 — Review Draft + Complexity</div>
+          <div class="p-4 text-sm space-y-2">
+            <div class="human inline-block">Engineer / PM reviews draft</div>
+            <div class="text-xs text-slate-600">Edits if needed, sets complexity, confirms → status becomes <strong>confirmed_draft</strong></div>
+          </div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <!-- 10. Sprint selection + push -->
+        <div class="stage">
+          <div class="stage-header bg-emerald-700">10 · Sprint Selection & Push to Jira</div>
+          <div class="p-4 text-sm space-y-3">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
+                <div class="font-medium">Team selects</div>
+                <div class="text-xs text-slate-500 mt-1">From approved drafts → status = selected</div>
+              </div>
+              <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
+                <div class="font-medium">Wrapper pushes</div>
+                <div class="text-xs text-slate-500 mt-1">Creates real Jira issue → status = sent</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="arrow">↓</div>
+
+        <!-- 11. Feedback loop -->
+        <div class="stage">
+          <div class="stage-header bg-emerald-800">11 · Jira Sync & Regression Detection</div>
+          <div class="p-4 text-sm space-y-2">
+            <div class="flex flex-wrap gap-3">
+              <div class="agent">
+                <span class="font-medium">Jira Sync Job</span>
+                <div class="text-xs text-slate-500 mt-0.5">Polls / webhook → updates <span class="mono">current_jira_status</span> + <span class="mono">jira_status_log</span></div>
+              </div>
+            </div>
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-900 mt-2">
+              <strong>Regression logic:</strong> If Jira = Done <em>and</em> new similar insights keep arriving → set <span class="mono">regression_flag = true</span> and surface the opportunity again.
+            </div>
+            <div class="text-xs text-slate-500">When Jira Done + no new insights → opportunity status = <strong>resolved</strong></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Agents summary -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="stage p-4">
+        <div class="text-xs font-semibold text-blue-700 uppercase mb-2">Agent 1 · Structuring</div>
+        <ul class="text-sm text-slate-600 space-y-1">
+          <li>• Turns raw text → structured insight</li>
+          <li>• Generates embedding</li>
+          <li>• Suggests theme & severity</li>
+        </ul>
+      </div>
+      <div class="stage p-4">
+        <div class="text-xs font-semibold text-indigo-700 uppercase mb-2">Agent 2 · Matching</div>
+        <ul class="text-sm text-slate-600 space-y-1">
+          <li>• Vector search candidates</li>
+          <li>• LLM decides match + reason</li>
+          <li>• Writes shortlist</li>
+        </ul>
+      </div>
+      <div class="stage p-4">
+        <div class="text-xs font-semibold text-slate-700 uppercase mb-2">Agent 3 · Drafting</div>
+        <ul class="text-sm text-slate-600 space-y-1">
+          <li>• Creates Jira-ready ticket</li>
+          <li>• Suggests complexity</li>
+          <li>• Human reviews before push</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Storage -->
+    <section class="stage p-5">
+      <div class="text-xs font-semibold text-slate-500 uppercase mb-3">Storage & Systems</div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+        <div>
+          <div class="font-medium">BigQuery</div>
+          <div class="text-xs text-slate-500">All tables + vector search</div>
+        </div>
+        <div>
+          <div class="font-medium">Google DLP</div>
+          <div class="text-xs text-slate-500">De-identification</div>
+        </div>
+        <div>
+          <div class="font-medium">Jira</div>
+          <div class="text-xs text-slate-500">Final delivery + status sync</div>
+        </div>
+        <div>
+          <div class="font-medium">UI (Smithapp / custom)</div>
+          <div class="text-xs text-slate-500">Human gates</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</body>
+</html>
