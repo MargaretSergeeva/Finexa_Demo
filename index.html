@@ -210,6 +210,7 @@
 </head>
 <body>
 <div id="root"></div>
+
 <script>
 window.STEPS_DATA = [
   {
@@ -451,6 +452,7 @@ window.TABLES_DATA = {
   }
 };
 </script>
+
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -460,25 +462,71 @@ const { useState, useEffect, useRef } = React;
 
 function App() {
   const [selectedStepId, setSelectedStepId] = useState("step-1");
-  const [selectedTableKey, setSelectedTableKey] = useState(null);
+  const [lines, setLines] = useState([]);
+  const gridWrapRef = useRef(null);
 
   const steps = window.STEPS_DATA || [];
   const tables = window.TABLES_DATA || {};
 
   const currentStep = steps.find(s => s.id === selectedStepId);
-  const currentTable = selectedTableKey ? tables[selectedTableKey] : (currentStep ? tables[currentStep.table] : null);
+  const currentTable = currentStep && currentStep.table ? tables[currentStep.table] : null;
+
+  // Calculate SVG connection paths between sequential steps
+  const updateConnectors = () => {
+    if (!gridWrapRef.current) return;
+    const wrapRect = gridWrapRef.current.getBoundingClientRect();
+    const newLines = [];
+
+    for (let i = 0; i < steps.length - 1; i++) {
+      const fromEl = document.getElementById(`box-${steps[i].id}`);
+      const toEl = document.getElementById(`box-${steps[i+1].id}`);
+
+      if (fromEl && toEl) {
+        const r1 = fromEl.getBoundingClientRect();
+        const r2 = toEl.getBoundingClientRect();
+
+        const x1 = r1.right - wrapRect.left;
+        const y1 = r1.top + r1.height / 2 - wrapRect.top;
+        const x2 = r2.left - wrapRect.left;
+        const y2 = r2.top + r2.height / 2 - wrapRect.top;
+
+        const dx = x2 - x1;
+        const path = `M ${x1} ${y1} C ${x1 + dx/2} ${y1}, ${x1 + dx/2} ${y2}, ${x2} ${y2}`;
+        newLines.push({ id: `line-${i}`, path });
+      }
+    }
+    setLines(newLines);
+  };
+
+  useEffect(() => {
+    updateConnectors();
+    window.addEventListener("resize", updateConnectors);
+    return () => window.removeEventListener("resize", updateConnectors);
+  }, []);
 
   return (
     <div className="app">
       <header>
         <h1>Finexa — AI-Augmented Feedback Intelligence</h1>
         <div className="sub">Interactive Architectural & Operational Process Diagram</div>
-        <div className="hint">Click any process step or database table pill to inspect operational details and schema structure.</div>
+        <div className="hint">Click any process step to inspect step details and its corresponding database table schema.</div>
       </header>
 
       <div className="main">
         <div className="lanes">
-          <div className="grid-wrap">
+          <div className="grid-wrap" ref={gridWrapRef}>
+            {/* SVG Connector Arrows */}
+            <svg className="connector-svg">
+              <defs>
+                <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--slate)" />
+                </marker>
+              </defs>
+              {lines.map(l => (
+                <path key={l.id} d={l.path} fill="none" stroke="var(--line)" strokeWidth="2" strokeDasharray="4 4" markerEnd="url(#arrow)" />
+              ))}
+            </svg>
+
             <div className="grid">
               {/* Lane Labels */}
               <div className="lane-label lane-ext" style={{ gridRow: 1 }}>
@@ -498,9 +546,9 @@ function App() {
                 <span className="sub">Gate 1 - Gate 3</span>
               </div>
 
-              {/* Process Steps */}
+              {/* Process Step Cards */}
               {steps.map((step) => {
-                const isSelected = selectedStepId === step.id && !selectedTableKey;
+                const isSelected = selectedStepId === step.id;
                 let boxClass = `box box-${step.lane}`;
                 if (step.lane === "hum") boxClass += " box-hum-soft";
                 if (isSelected) boxClass += " selected";
@@ -508,26 +556,17 @@ function App() {
                 return (
                   <div
                     key={step.id}
+                    id={`box-${step.id}`}
                     className={boxClass}
                     style={{ gridColumn: step.col + 1, gridRow: step.row }}
-                    onClick={() => {
-                      setSelectedStepId(step.id);
-                      setSelectedTableKey(null);
-                    }}
+                    onClick={() => setSelectedStepId(step.id)}
                   >
                     <div className="step-badge">{step.num}</div>
                     <div className="box-content">
                       <div className="title">{step.title}</div>
                       <div className="sub">{step.sub}</div>
                       {step.table && (
-                        <div
-                          className={`pill ${selectedTableKey === step.table ? "selected" : ""}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedStepId(step.id);
-                            setSelectedTableKey(step.table);
-                          }}
-                        >
+                        <div className={`pill ${isSelected ? "selected" : ""}`}>
                           → {step.table}
                         </div>
                       )}
