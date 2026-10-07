@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,45 +8,13 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
     body { font-family: 'IBM Plex Sans', system-ui, sans-serif; }
-    .mono { font-family: 'IBM Plex Mono', monospace; }
-    .stage {
-      border-radius: 12px;
-      border: 1px solid #e2e8f0;
-      background: white;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    }
-    .stage-header {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      padding: 8px 14px;
-      border-radius: 11px 11px 0 0;
-      color: white;
-    }
-    .arrow {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #64748b;
-      font-size: 20px;
-      flex-shrink: 0;
-    }
-    .agent {
-      background: #f8fafc;
-      border: 1px dashed #cbd5e1;
-      border-radius: 8px;
-      padding: 8px 12px;
-      font-size: 12px;
-    }
-    .human {
-      background: #fef3c7;
-      border: 1px solid #f59e0b;
-      border-radius: 8px;
-      padding: 6px 10px;
-      font-size: 12px;
-      font-weight: 500;
-    }
+    .mono { font-family: 'IBM Plex Mono', monospace; font-size: 0.92em; }
+    .stage { border-radius: 12px; border: 1px solid #e2e8f0; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .stage-header { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; padding: 8px 14px; border-radius: 11px 11px 0 0; color: white; }
+    .arrow { display: flex; justify-content: center; color: #64748b; font-size: 20px; }
+    .agent { background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 8px 12px; font-size: 12px; }
+    .human { background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 4px 10px; font-size: 12px; font-weight: 500; display: inline-block; }
+    .tag { font-size: 10px; font-weight: 600; border-radius: 999px; padding: 2px 8px; margin-left: 6px; vertical-align: middle; }
   </style>
 </head>
 <body class="bg-slate-50 min-h-screen">
@@ -55,268 +22,126 @@
   <header class="bg-white border-b border-slate-200">
     <div class="max-w-6xl mx-auto px-6 py-5">
       <h1 class="text-xl font-bold text-slate-900">Finexa · Data Pipeline Architecture</h1>
-      <p class="text-sm text-slate-500 mt-0.5">AI-Augmented Feedback Intelligence · Payments Domain</p>
+      <p class="text-sm text-slate-500 mt-0.5">12-Week Hybrid Agentic System Pilot · Payments Domain · BigQuery as single source of truth · Appsmith as orchestrator &amp; UI</p>
     </div>
   </header>
 
   <main class="max-w-6xl mx-auto px-6 py-8 space-y-10">
 
-    <!-- High-level flow -->
+    <section class="stage p-4 text-sm text-slate-700">
+      <strong>Design principle:</strong> the model produces content; deterministic code performs consequential actions.
+      Four sequential commands plus <span class="mono">/ask-data</span> in parallel, three human gates, and no AI component holding Jira credentials.
+    </section>
+
     <section>
       <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">End-to-End Flow</h2>
-      
       <div class="flex flex-col gap-3">
 
-        <!-- 1. Ingest -->
         <div class="stage">
-          <div class="stage-header bg-slate-700">1 · Ingest</div>
-          <div class="p-4 grid grid-cols-1 md:grid-cols-4 gap-3 text-sm">
-            <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
-              <div class="font-medium text-slate-800">CRM</div>
-              <div class="text-xs text-slate-500 mt-1">Salesforce / HubSpot notes</div>
-            </div>
-            <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
-              <div class="font-medium text-slate-800">Support</div>
-              <div class="text-xs text-slate-500 mt-1">Zendesk / Intercom tickets</div>
-            </div>
-            <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
-              <div class="font-medium text-slate-800">Interviews</div>
-              <div class="text-xs text-slate-500 mt-1">Call notes, research</div>
-            </div>
-            <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
-              <div class="font-medium text-slate-800">Other</div>
-              <div class="text-xs text-slate-500 mt-1">NPS, surveys, Slack</div>
-            </div>
-          </div>
-          <div class="px-4 pb-3 text-xs text-slate-500">→ Written to <span class="mono">raw_feedback</span></div>
-        </div>
-
-        <div class="arrow">↓</div>
-
-        <!-- 2. De-identify -->
-        <div class="stage">
-          <div class="stage-header bg-slate-600">2 · De-identify</div>
-          <div class="p-4 flex flex-wrap items-center gap-4 text-sm">
-            <div class="agent">
-              <span class="font-medium">Google Cloud DLP</span>
-              <div class="text-xs text-slate-500 mt-0.5">PII removal / masking</div>
-            </div>
-            <div class="text-slate-400">→</div>
-            <div class="text-slate-600">Clean text stored back on <span class="mono">raw_feedback.raw_text</span></div>
-          </div>
-        </div>
-
-        <div class="arrow">↓</div>
-
-        <!-- 3. Structure -->
-        <div class="stage">
-          <div class="stage-header bg-blue-800">3 · Structure (LLM Agent 1)</div>
+          <div class="stage-header bg-slate-700">1 · Ingest &amp; De-identify</div>
           <div class="p-4 space-y-3 text-sm">
-            <div class="flex flex-wrap gap-3 items-start">
-              <div class="agent">
-                <span class="font-medium">LLM Structuring Agent</span>
-                <div class="text-xs text-slate-500 mt-0.5">Extracts summary, pain points, root cause, theme, severity, segment…</div>
-              </div>
-              <div class="text-slate-400">→</div>
-              <div>
-                <div class="font-medium text-slate-800">Writes to <span class="mono">processed_insights</span></div>
-                <div class="text-xs text-slate-500 mt-0.5">+ generates embedding (VECTOR)</div>
-              </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div class="bg-slate-50 rounded-lg p-3 border border-slate-200"><div class="font-medium">CRM notes</div></div>
+              <div class="bg-slate-50 rounded-lg p-3 border border-slate-200"><div class="font-medium">Support tickets</div></div>
+              <div class="bg-slate-50 rounded-lg p-3 border border-slate-200"><div class="font-medium">Interview transcripts</div></div>
+              <div class="bg-slate-50 rounded-lg p-3 border border-slate-200"><div class="font-medium">Other channels</div></div>
             </div>
+            <div class="agent"><span class="font-medium">Google Cloud DLP</span>
+              <div class="text-xs text-slate-500 mt-0.5">Scrubs PII and sensitive financial data at ingestion. The AI service account holds no credential to raw source data, so PII is unreachable by design.</div></div>
+            <div class="text-xs text-slate-500">→ Writes to <span class="mono">raw_feedback</span> (linked to <span class="mono">merchants</span>)</div>
           </div>
         </div>
-
         <div class="arrow">↓</div>
 
-        <!-- 4. Match -->
         <div class="stage">
-          <div class="stage-header bg-blue-700">4 · Match (Vector + LLM)</div>
-          <div class="p-4 space-y-3 text-sm">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
-                <div class="font-medium">Vector Search</div>
-                <div class="text-xs text-slate-500 mt-1">Find similar opportunities in <span class="mono">insight_repository</span> using embedding</div>
-              </div>
-              <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
-                <div class="font-medium">LLM Re-ranker</div>
-                <div class="text-xs text-slate-500 mt-1">Reads candidates + insight → decides match confidence + reason</div>
-              </div>
-            </div>
-            <div class="text-xs text-slate-500">→ Results written to <span class="mono">candidate_shortlist</span> (score, rank, llm_match_reason)</div>
+          <div class="stage-header bg-blue-800">2 · /process-feedback <span class="tag bg-white/20">Assist</span></div>
+          <div class="p-4 text-sm space-y-2">
+            <div class="text-slate-700">Splits one transcript or ticket into distinct problems, each with summary, pain points, root cause and a provisional theme. Thin material halts and asks for clarification rather than guessing.</div>
+            <div class="text-xs text-slate-500">→ Writes to <span class="mono">processed_insights</span> (+ embedding for vector search, theme from <span class="mono">feature_area_taxonomy</span>)</div>
           </div>
         </div>
-
         <div class="arrow">↓</div>
 
-        <!-- 5. Gate 1 -->
+        <div class="stage">
+          <div class="stage-header bg-blue-700">3 · /log-feedback <span class="tag bg-white/20">Assist</span></div>
+          <div class="p-4 text-sm space-y-2">
+            <div class="text-slate-700">Vector search finds similar confirmed issues; the command proposes whether this is the same issue as an existing opportunity or something new.</div>
+            <div class="text-xs text-slate-500">→ Writes to <span class="mono">candidate_shortlist</span> and <span class="mono">logged_feedback_pending</span></div>
+          </div>
+        </div>
+        <div class="arrow">↓</div>
+
         <div class="stage border-amber-300">
-          <div class="stage-header bg-amber-600">5 · Human Gate 1 — Confirm Insight & Opportunity</div>
-          <div class="p-4 space-y-3 text-sm">
-            <div class="human inline-block">Human decides</div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2">
-              <div class="bg-white border border-slate-200 rounded-lg p-2.5 text-xs">
-                <strong>Accept & attach</strong><br>Link to existing opportunity
-              </div>
-              <div class="bg-white border border-slate-200 rounded-lg p-2.5 text-xs">
-                <strong>Create new</strong><br>New opportunity is born
-              </div>
-              <div class="bg-white border border-slate-200 rounded-lg p-2.5 text-xs">
-                <strong>Reject</strong><br>Archive the insight
-              </div>
-            </div>
-            <div class="text-xs text-slate-500 mt-2">
-              Writes to <span class="mono">gate_decisions</span> · updates <span class="mono">processed_insights</span> · creates/updates <span class="mono">insight_repository</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="arrow">↓</div>
-
-        <!-- 6. Score -->
-        <div class="stage">
-          <div class="stage-header bg-indigo-700">6 · Score (Deterministic)</div>
+          <div class="stage-header bg-amber-600">4 · Human Gate 1 — Confirm reading &amp; grouping</div>
           <div class="p-4 text-sm space-y-2">
-            <div class="flex flex-wrap gap-3 items-center">
-              <div class="agent">
-                <span class="font-medium">Scoring Engine</span>
-                <div class="text-xs text-slate-500 mt-0.5">Uses <span class="mono">scoring_weights</span> + <span class="mono">strategic_priorities</span></div>
-              </div>
-              <div class="text-slate-400">→</div>
-              <div>
-                <div><span class="mono">priority_score</span> + <span class="mono">priority_explanation</span></div>
-                <div class="text-xs text-slate-500">Status moves to <strong>logged</strong> then <strong>prioritized</strong></div>
-              </div>
-            </div>
-            <div class="text-xs text-slate-500">Re-scoring can happen anytime (new insights, weight changes) without changing status.</div>
+            <span class="human">PM verifies</span>
+            <div class="text-slate-700">A verification task with a checkable answer: attach to an existing opportunity, create a new one, or reject. <strong>The only gate designed to graduate</strong> to spot-checks once agreement rates are sustained.</div>
+            <div class="text-xs text-slate-500">→ <span class="mono">gate_decisions</span> (ai_proposed_value vs. pm_final_value) · creates/updates <span class="mono">opportunities</span></div>
           </div>
         </div>
-
         <div class="arrow">↓</div>
 
-        <!-- 7. Gate 2 -->
+        <div class="stage">
+          <div class="stage-header bg-indigo-700">5 · Score Opportunity <span class="tag bg-white/20">Deterministic</span> + /prioritize-opportunities <span class="tag bg-white/20">Augment</span></div>
+          <div class="p-4 text-sm space-y-2">
+            <div class="text-slate-700">Priority score = weighted sum of five inputs, pulled from evidence already in the system: <strong>customer value</strong> (Enterprise vs. SMB), <strong>urgency</strong> (worst severity + recurrence), <strong>strategic alignment</strong>, <strong>operational risk</strong>, <strong>compliance sensitivity</strong>. Arithmetic, not a model call. Weights are versioned and tunable.</div>
+            <div class="text-slate-700">The command only <em>explains</em> the score in plain language; it never calculates it. Implementation complexity is excluded and set manually at Gate 3.</div>
+            <div class="text-xs text-slate-500">→ <span class="mono">opportunities.priority_score</span>, <span class="mono">priority_explanation</span>, <span class="mono">priority_weights_version</span></div>
+          </div>
+        </div>
+        <div class="arrow">↓</div>
+
         <div class="stage border-amber-300">
-          <div class="stage-header bg-amber-600">7 · Human Gate 2 — Approve for Engineering</div>
+          <div class="stage-header bg-amber-600">6 · Human Gate 2 — Worth drafting now? (permanent)</div>
           <div class="p-4 text-sm space-y-2">
-            <div class="human inline-block">Human reviews score explanation</div>
-            <div class="text-xs text-slate-600 mt-1">Approves opportunity → sets <span class="mono">approved_for_drafting = true</span></div>
-            <div class="text-xs text-slate-500">Logged in <span class="mono">gate_decisions</span></div>
+            <span class="human">PM decides</span>
+            <div class="text-slate-700">A judgment task shaped by capacity and timing. No single correct answer, so this gate never graduates.</div>
+            <div class="text-xs text-slate-500">→ <span class="mono">approved_for_drafting = true</span> · logged in <span class="mono">gate_decisions</span></div>
           </div>
         </div>
-
         <div class="arrow">↓</div>
 
-        <!-- 8. Draft -->
         <div class="stage">
-          <div class="stage-header bg-slate-700">8 · Draft Jira Ticket (LLM Agent 2)</div>
+          <div class="stage-header bg-slate-700">7 · /draft-user-story <span class="tag bg-white/20">Assist</span></div>
           <div class="p-4 text-sm space-y-2">
-            <div class="agent inline-block">
-              <span class="font-medium">Engineering Draft Agent</span>
-              <div class="text-xs text-slate-500 mt-0.5">Creates problem statement, user story, acceptance criteria, complexity estimate</div>
-            </div>
-            <div class="text-xs text-slate-500 mt-1">→ Writes to <span class="mono">jira_tickets</span> (status = draft)</div>
+            <div class="text-slate-700">Converts the approved opportunity into problem statement, user story, acceptance criteria and evidence-linked rationale.</div>
+            <div class="text-xs text-slate-500">→ <span class="mono">jira_tickets</span> (draft)</div>
           </div>
         </div>
-
         <div class="arrow">↓</div>
 
-        <!-- 9. Gate 3 -->
         <div class="stage border-amber-300">
-          <div class="stage-header bg-amber-600">9 · Human Gate 3 — Review Draft + Complexity</div>
+          <div class="stage-header bg-amber-600">8 · Human Gate 3 — Draft &amp; complexity (permanent)</div>
           <div class="p-4 text-sm space-y-2">
-            <div class="human inline-block">Engineer / PM reviews draft</div>
-            <div class="text-xs text-slate-600">Edits if needed, sets complexity, confirms → status becomes <strong>confirmed_draft</strong></div>
+            <span class="human">PM / Engineering Lead confirm</span>
+            <div class="text-slate-700">Checks the draft against the original evidence, assigns implementation complexity, confirms for Jira.</div>
           </div>
         </div>
-
         <div class="arrow">↓</div>
 
-        <!-- 10. Sprint selection + push -->
         <div class="stage">
-          <div class="stage-header bg-emerald-700">10 · Sprint Selection & Push to Jira</div>
-          <div class="p-4 text-sm space-y-3">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
-                <div class="font-medium">Team selects</div>
-                <div class="text-xs text-slate-500 mt-1">From approved drafts → status = selected</div>
-              </div>
-              <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
-                <div class="font-medium">Wrapper pushes</div>
-                <div class="text-xs text-slate-500 mt-1">Creates real Jira issue → status = sent</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="arrow">↓</div>
-
-        <!-- 11. Feedback loop -->
-        <div class="stage">
-          <div class="stage-header bg-emerald-800">11 · Jira Sync & Regression Detection</div>
+          <div class="stage-header bg-emerald-700">9 · Wrapper Code → Jira <span class="tag bg-white/20">Deterministic</span></div>
           <div class="p-4 text-sm space-y-2">
-            <div class="flex flex-wrap gap-3">
-              <div class="agent">
-                <span class="font-medium">Jira Sync Job</span>
-                <div class="text-xs text-slate-500 mt-0.5">Polls / webhook → updates <span class="mono">current_jira_status</span> + <span class="mono">jira_status_log</span></div>
-              </div>
-            </div>
-            <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-900 mt-2">
-              <strong>Regression logic:</strong> If Jira = Done <em>and</em> new similar insights keep arriving → set <span class="mono">regression_flag = true</span> and surface the opportunity again.
-            </div>
-            <div class="text-xs text-slate-500">When Jira Done + no new insights → opportunity status = <strong>resolved</strong></div>
+            <div class="text-slate-700">The <strong>only component holding Jira credentials</strong> posts selected drafts to Jira. No AI output can reach engineering unreviewed: a structural guarantee, not a policy.</div>
+            <div class="text-xs text-slate-500">Status sync → <span class="mono">jira_status_log</span>. New insights on a resolved opportunity → <span class="mono">regression_flag</span> + <span class="mono">last_insight_at</span>, surfacing post-release regressions.</div>
           </div>
         </div>
 
       </div>
     </section>
 
-    <!-- Agents summary -->
-    <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div class="stage p-4">
-        <div class="text-xs font-semibold text-blue-700 uppercase mb-2">Agent 1 · Structuring</div>
-        <ul class="text-sm text-slate-600 space-y-1">
-          <li>• Turns raw text → structured insight</li>
-          <li>• Generates embedding</li>
-          <li>• Suggests theme & severity</li>
-        </ul>
-      </div>
-      <div class="stage p-4">
-        <div class="text-xs font-semibold text-indigo-700 uppercase mb-2">Agent 2 · Matching</div>
-        <ul class="text-sm text-slate-600 space-y-1">
-          <li>• Vector search candidates</li>
-          <li>• LLM decides match + reason</li>
-          <li>• Writes shortlist</li>
-        </ul>
-      </div>
-      <div class="stage p-4">
-        <div class="text-xs font-semibold text-slate-700 uppercase mb-2">Agent 3 · Drafting</div>
-        <ul class="text-sm text-slate-600 space-y-1">
-          <li>• Creates Jira-ready ticket</li>
-          <li>• Suggests complexity</li>
-          <li>• Human reviews before push</li>
-        </ul>
-      </div>
+    <section class="stage">
+      <div class="stage-header bg-sky-700">In parallel · /ask-data <span class="tag bg-white/20">Augment · read-only</span></div>
+      <div class="p-4 text-sm text-slate-700">Plain-language querying of stored insights at any time via an MCP-based analytical agent, alongside Appsmith dashboards. Three layers: <strong>Product</strong>, <strong>Process</strong> and <strong>AI Operations</strong> analytics (<span class="mono">ai_run_metrics</span>).</div>
     </section>
 
-    <!-- Storage -->
     <section class="stage p-5">
-      <div class="text-xs font-semibold text-slate-500 uppercase mb-3">Storage & Systems</div>
+      <div class="text-xs font-semibold text-slate-500 uppercase mb-3">Storage &amp; Systems</div>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-        <div>
-          <div class="font-medium">BigQuery</div>
-          <div class="text-xs text-slate-500">All tables + vector search</div>
-        </div>
-        <div>
-          <div class="font-medium">Google DLP</div>
-          <div class="text-xs text-slate-500">De-identification</div>
-        </div>
-        <div>
-          <div class="font-medium">Jira</div>
-          <div class="text-xs text-slate-500">Final delivery + status sync</div>
-        </div>
-        <div>
-          <div class="font-medium">UI (Smithapp / custom)</div>
-          <div class="text-xs text-slate-500">Human gates</div>
-        </div>
+        <div><div class="font-medium">BigQuery</div><div class="text-xs text-slate-500">Single source of truth, vector search, access logs</div></div>
+        <div><div class="font-medium">Google Cloud DLP</div><div class="text-xs text-slate-500">De-identification at ingestion</div></div>
+        <div><div class="font-medium">Appsmith</div><div class="text-xs text-slate-500">Workflow orchestrator &amp; gate UI</div></div>
+        <div><div class="font-medium">Jira</div><div class="text-xs text-slate-500">Delivery, via wrapper only</div></div>
       </div>
     </section>
 
