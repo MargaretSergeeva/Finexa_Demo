@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finexa · Gate 1 Demo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .fade-in { animation: fadeIn 0.2s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex">
+
+  <!-- Toast -->
+  <div id="toast" class="fixed top-4 right-4 z-50 hidden">
+    <div class="bg-slate-900 text-white px-4 py-2.5 rounded-lg shadow-lg text-sm flex items-center gap-2">
+      <span id="toast-icon">✓</span><span id="toast-msg"></span>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal-backdrop" class="fixed inset-0 bg-black/40 z-40 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 fade-in">
+      <div class="flex items-start justify-between mb-3 gap-4">
+        <h3 id="modal-title" class="text-lg font-semibold text-slate-900"></h3>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-xl leading-none">&times;</button>
+      </div>
+      <div id="modal-body" class="text-sm text-slate-600 mb-5"></div>
+      <div id="modal-actions" class="flex justify-end gap-2"></div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="w-14 bg-slate-800 text-white flex flex-col items-center py-4 gap-5 flex-shrink-0">
+    <div class="text-xl font-bold">≡</div>
+    <button class="p-2 rounded bg-blue-600" title="Insights">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+    </button>
+    <button class="p-2 rounded hover:bg-slate-700 opacity-60" title="Opportunities">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+    </button>
+    <button class="p-2 rounded hover:bg-slate-700 opacity-60 mt-auto" title="Settings">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+    </button>
+  </aside>
+
+  <div class="flex-1 flex flex-col min-w-0">
+    <header class="bg-white border-b border-slate-200 px-5 py-3 flex items-center justify-between flex-shrink-0">
+      <div class="flex items-center gap-3">
+        <h1 class="text-base font-semibold text-slate-800">Finexa · Feedback Intelligence</h1>
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Gate 1 · Insight review</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="text-sm text-slate-500" id="queue-count"></span>
+        <div class="w-8 h-8 rounded-full bg-slate-700 text-white flex items-center justify-center text-sm font-medium">M</div>
+      </div>
+    </header>
+
+    <main class="flex-1 flex overflow-hidden">
+      <!-- LEFT: insight list -->
+      <div class="w-full max-w-sm lg:max-w-md border-r border-slate-200 bg-white flex flex-col flex-shrink-0">
+        <div class="px-4 py-3 border-b border-slate-100">
+          <h2 class="text-sm font-semibold text-slate-700">Incoming insights</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Awaiting review &amp; linking</p>
+        </div>
+        <div class="flex-1 overflow-y-auto" id="insight-list"></div>
+      </div>
+
+      <!-- RIGHT: detail -->
+      <div class="flex-1 bg-slate-50 overflow-y-auto min-w-0">
+        <div id="empty-state" class="h-full flex items-center justify-center text-slate-400 text-sm">Select an insight to review</div>
+        <div id="detail" class="hidden p-6 max-w-3xl fade-in"></div>
+        <div id="success" class="hidden max-w-md mx-auto mt-16 text-center fade-in px-6">
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
+            <div class="w-14 h-14 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">✓</div>
+            <h2 id="success-title" class="text-lg font-semibold text-slate-900 mb-1"></h2>
+            <p id="success-msg" class="text-sm text-slate-600 mb-5"></p>
+            <button onclick="backToList()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg">Back to queue</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const OPPS = {
+      'OP-011': { title: 'Payment failures lack clear reasons in merchant UI', workflow: 'Payment status', area: 'payments_status', status: 'for drafting', cls: 'bg-green-100 text-green-800',
+        evidence: '9 reports · 4 enterprise · recent escalations', priority: '4 High · 3 Medium · 2 Low · 4 Enterprise · 5 SMB', score: 0.82 },
+      'OP-019': { title: 'Generic error messages in checkout flow', workflow: 'Checkout', area: 'checkout_flow', status: 'monitoring', cls: 'bg-yellow-100 text-yellow-800',
+        evidence: '6 reports · 2 enterprise', priority: '2 High · 3 Medium · 1 Low · 2 Enterprise · 4 SMB', score: 0.68 },
+      'OP-024': { title: 'Merchant dashboard lacks payment method health indicators', workflow: 'Merchant dashboard', area: 'merchant_dashboard', status: 'backlog', cls: 'bg-slate-100 text-slate-700',
+        evidence: '4 reports · mostly SMB', priority: '1 High · 2 Medium · 1 Low · 1 Enterprise · 3 SMB', score: 0.61 },
+      'OP-031': { title: 'Refund status not visible to merchants in real time', workflow: 'Refunds', area: 'payments_refunds', status: 'backlog', cls: 'bg-slate-100 text-slate-700',
+        evidence: '3 reports · all SMB', priority: '0 High · 2 Medium · 1 Low · 3 SMB', score: 0.53 }
+    };
+
+    const INSIGHTS = [
+      {
+        id: 'INS-0234', type: 'Support ticket', segment: 'Enterprise', date: '14 Mar 2025',
+        summary: 'Merchant cannot see why a payment failed, only a generic error message shown in the dashboard',
+        problem: ['Understand why each payment failed', 'Recover in the dashboard'],
+        jobs: ['No failure reason or code', 'Know what action is in the UI', 'Support opens internal tools'],
+        pain: 'Failure codes are logged, but not exposed in the merchant-facing payment overview',
+        ticket: { id: 'ST-49281', customer: 'Acme Payments GmbH (EU)', channel: 'Email → Support', created: '12 Mar 2025 · 14:22', priority: 'High',
+          quote: 'When a payment fails we only see "Payment failed". We need the actual decline reason (insufficient funds, card expired, 3DS failure…) so our team can tell the merchant what to do next.' },
+        matches: [ ['OP-011', 0.87], ['OP-019', 0.72], ['OP-024', 0.61] ]
+      },
+      {
+        id: 'INS-0235', type: 'Sales call', segment: 'Enterprise', date: '14 Mar 2025',
+        summary: 'Prospect abandons checkout when a card is declined because the error gives no next step',
+        problem: ['Reduce checkout abandonment', 'Guide buyers after a decline'],
+        jobs: ['Retry with another method', 'Understand which field failed'],
+        pain: 'Checkout shows one generic message for every decline type, so buyers give up',
+        ticket: { id: 'ST-49290', customer: 'Northwind Retail', channel: 'Sales → CRM note', created: '13 Mar 2025 · 09:40', priority: 'Medium',
+          quote: 'Their checkout just says the payment did not go through — no reason, no retry hint. We lose conversions on that screen.' },
+        matches: [ ['OP-019', 0.81], ['OP-011', 0.66], ['OP-024', 0.40] ]
+      },
+      {
+        id: 'INS-0236', type: 'Support ticket', segment: 'SMB', date: '13 Mar 2025',
+        summary: 'Merchant has no visibility into payment method health and finds out about issues from buyers',
+        problem: ['See method-level health', 'Spot degraded issuers early'],
+        jobs: ['Per-method success rates', 'Proactive alerting'],
+        pain: 'The dashboard shows no health indicators, so degraded methods are invisible until buyers complain',
+        ticket: { id: 'ST-49277', customer: 'Bright Coffee Co.', channel: 'Chat → Support', created: '11 Mar 2025 · 16:05', priority: 'Medium',
+          quote: 'We only learn a card type is failing when customers email us. There is nothing on the dashboard warning us.' },
+        matches: [ ['OP-024', 0.79], ['OP-011', 0.44], ['OP-019', 0.38] ]
+      },
+      {
+        id: 'INS-0237', type: 'Survey response', segment: 'SMB', date: '12 Mar 2025',
+        summary: 'Refund shows as pending for days with no status change, merchant cannot reassure the buyer',
+        problem: ['Confirm refund progress', 'Give buyers a timeline'],
+        jobs: ['Real-time refund status', 'Expected settlement date'],
+        pain: 'Refund state is opaque between initiation and settlement',
+        ticket: { id: 'ST-49260', customer: 'Lumen Studio', channel: 'Survey → NPS follow-up', created: '10 Mar 2025 · 11:12', priority: 'Low',
+          quote: 'A refund sat as pending for four days. I had no way to tell the customer what was happening.' },
+        matches: [ ['OP-031', 0.83], ['OP-024', 0.41] ]
+      }
+    ];
+
+    let selectedId = null;
+    let processed = {}; // id -> action
+    let editing = false;
+
+    function toast(msg, icon = '✓') {
+      document.getElementById('toast-msg').textContent = msg;
+      document.getElementById('toast-icon').textContent = icon;
+      const t = document.getElementById('toast');
+      t.classList.remove('hidden');
+      setTimeout(() => t.classList.add('hidden'), 2500);
+    }
+
+    function updateCount() {
+      const left = INSIGHTS.length - Object.keys(processed).length;
+      document.getElementById('queue-count').textContent = left + ' of ' + INSIGHTS.length + ' remaining';
+    }
+
+    function renderList() {
+      const list = document.getElementById('insight-list');
+      list.innerHTML = INSIGHTS.map(ins => {
+        const isSel = ins.id === selectedId;
+        const done = processed[ins.id];
+        const top = ins.matches[0];
+        const segCls = ins.segment === 'Enterprise' ? 'bg-indigo-100 text-indigo-800' : 'bg-slate-100 text-slate-700';
+        return `
+          <button onclick="selectInsight('${ins.id}')"
+            class="w-full text-left px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition
+              ${isSel ? 'bg-blue-50 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent'}
+              ${done ? 'opacity-60' : ''}">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-sm font-medium text-slate-900">${ins.id}</span>
+              <span class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-800">${ins.type}</span>
+              <span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${segCls}">${ins.segment}</span>
+              ${done ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-100 text-green-800">${done}</span>` : ''}
+            </div>
+            <div class="text-xs text-slate-600 mt-1 line-clamp-2">${ins.summary}</div>
+            <div class="text-[11px] text-slate-400 mt-1">Top match ${top[0]} · ${top[1].toFixed(2)}</div>
+          </button>`;
+      }).join('');
+    }
+
+    function selectInsight(id) {
+      selectedId = id;
+      editing = false;
+      renderList();
+      const ins = INSIGHTS.find(x => x.id === id);
+      document.getElementById('empty-state').classList.add('hidden');
+      document.getElementById('success').classList.add('hidden');
+      const d = document.getElementById('detail');
+      d.classList.remove('hidden');
+      const tk = ins.ticket;
+      d.innerHTML = `
+        <div class="flex flex-wrap items-center gap-2 mb-4">
+          <h2 class="text-lg font-semibold text-slate-900">Insight ${ins.id}</h2>
+          <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">${ins.type}</span>
+          <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">${ins.segment}</span>
+          <span class="text-xs text-slate-500 ml-auto">${ins.date}</span>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+          <div class="mb-4">
+            <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Summary</h3>
+            <p id="summary-text" class="text-sm text-slate-700 leading-relaxed">${ins.summary}</p>
+            <textarea id="summary-edit" class="hidden w-full text-sm border border-blue-300 rounded-lg p-2 mt-1 focus:ring-2 focus:ring-blue-500 outline-none" rows="3"></textarea>
+          </div>
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Problem details</h3>
+              <ul class="text-sm text-slate-600 space-y-0.5 list-disc list-inside">${ins.problem.map(p => `<li>${p}</li>`).join('')}</ul>
+            </div>
+            <div>
+              <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Jobs &amp; goals</h3>
+              <ul class="text-sm text-slate-600 space-y-0.5 list-disc list-inside">${ins.jobs.map(j => `<li>${j}</li>`).join('')}</ul>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Pain points</h3>
+            <p class="text-sm text-slate-600">${ins.pain}</p>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <button onclick="toggleTicket()" class="flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-blue-600">
+            <span id="ticket-chevron">▸</span> Source ticket · ${tk.id}
+          </button>
+          <div id="ticket-box" class="hidden mt-2 border border-slate-200 rounded-lg p-3 bg-white text-sm space-y-2">
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div><span class="text-slate-500">Customer</span><br><strong>${tk.customer}</strong></div>
+              <div><span class="text-slate-500">Channel</span><br>${tk.channel}</div>
+              <div><span class="text-slate-500">Created</span><br>${tk.created}</div>
+              <div><span class="text-slate-500">Priority</span><br><span class="text-red-600 font-medium">${tk.priority}</span></div>
+            </div>
+            <div class="bg-slate-50 border border-slate-200 rounded p-2.5 text-slate-700 text-xs leading-relaxed">"${tk.quote}"</div>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Matching opportunities</h3>
+          <div class="space-y-1.5" id="match-list">
+            ${ins.matches.map((m, i) => matchRow(ins.id, m[0], m[1], i === 0)).join('')}
+          </div>
+        </div>
+
+        <div class="mt-6 pt-4 flex flex-wrap gap-2 border-t border-slate-200" id="actions">
+          <button onclick="doAccept()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg">Accept &amp; attach to <span id="accept-target">${ins.matches[0][0]}</span></button>
+          <button onclick="doEdit()" class="px-3.5 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-sm font-medium rounded-lg">Edit &amp; attach</button>
+          <button onclick="doCreate()" class="px-3.5 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-sm font-medium rounded-lg">Create new opportunity</button>
+          <button onclick="doReject()" class="px-3.5 py-2 text-slate-500 hover:text-red-600 text-sm font-medium">Reject insight</button>
+        </div>
+      `;
+      chosenMatch = ins.matches[0][0];
+    }
+
+    let chosenMatch = null;
+
+    function matchRow(insId, oppId, score, sel) {
+      const o = OPPS[oppId];
+      return `
+        <div id="match-${oppId}" class="rounded-lg border ${sel ? 'border-2 border-blue-500 bg-blue-50' : 'border-slate-200'} px-3 py-2">
+          <div class="flex justify-between items-center gap-2">
+            <button onclick="chooseMatch('${oppId}')" class="text-left flex-1 min-w-0">
+              <span class="text-sm font-medium text-slate-900">${oppId} · ${o.title}</span>
+            </button>
+            <span class="text-sm font-semibold ${score >= 0.8 ? 'text-blue-700' : 'text-slate-600'}">${score.toFixed(2)}</span>
+            <button onclick="openOpp('${oppId}')" class="text-xs font-medium text-blue-600 hover:text-blue-800 whitespace-nowrap">Open →</button>
+          </div>
+        </div>`;
+    }
+
+    function chooseMatch(oppId) {
+      chosenMatch = oppId;
+      const ins = INSIGHTS.find(x => x.id === selectedId);
+      ins.matches.forEach(m => {
+        const el = document.getElementById('match-' + m[0]);
+        el.className = 'rounded-lg border ' + (m[0] === oppId ? 'border-2 border-blue-500 bg-blue-50' : 'border-slate-200') + ' px-3 py-2';
+      });
+      document.getElementById('accept-target').textContent = oppId;
+    }
+
+    function openOpp(oppId) {
+      const o = OPPS[oppId];
+      showModal(`${oppId} · ${o.title}`, `
+        <div class="space-y-3 text-sm">
+          <div class="flex gap-6 flex-wrap">
+            <div><span class="text-slate-500 text-xs">Priority score</span><br><strong class="text-emerald-600 text-base">${o.score.toFixed(2)}</strong></div>
+            <div><span class="text-slate-500 text-xs">Status</span><br><strong>${o.status}</strong></div>
+            <div><span class="text-slate-500 text-xs">Workflow</span><br>${o.workflow}</div>
+          </div>
+          <div><span class="text-slate-500 text-xs">Feature area</span><br>${o.area}</div>
+          <div><span class="text-slate-500 text-xs">Evidence summary</span><br>${o.evidence}</div>
+          <div><span class="text-slate-500 text-xs">Priority mix</span><br>${o.priority}</div>
+        </div>
+      `, [
+        { label: 'Close', primary: false, fn: closeModal },
+        { label: 'Attach to this', primary: true, fn: () => { chooseMatch(oppId); closeModal(); doAccept(); } }
+      ]);
+    }
+
+    function showModal(title, bodyHtml, buttons) {
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-body').innerHTML = bodyHtml;
+      const el = document.getElementById('modal-actions');
+      el.innerHTML = '';
+      buttons.forEach(b => {
+        const btn = document.createElement('button');
+        btn.className = b.primary ? 'px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg'
+          : 'px-4 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-sm font-medium rounded-lg';
+        btn.textContent = b.label; btn.onclick = b.fn; el.appendChild(btn);
+      });
+      const bd = document.getElementById('modal-backdrop');
+      bd.classList.remove('hidden'); bd.classList.add('flex');
+    }
+    function closeModal() {
+      const bd = document.getElementById('modal-backdrop');
+      bd.classList.add('hidden'); bd.classList.remove('flex');
+    }
+
+    function toggleTicket() {
+      const p = document.getElementById('ticket-box');
+      const c = document.getElementById('ticket-chevron');
+      p.classList.toggle('hidden');
+      c.textContent = p.classList.contains('hidden') ? '▸' : '▾';
+    }
+
+    function doAccept() {
+      showModal('Confirm attachment', `Attach ${selectedId} to <strong>${chosenMatch}</strong>?`, [
+        { label: 'Cancel', primary: false, fn: closeModal },
+        { label: 'Yes, attach', primary: true, fn: () => { closeModal(); finish('attached', `${selectedId} linked to ${chosenMatch}. Score will be recalculated.`); } }
+      ]);
+    }
+    function doEdit() {
+      if (!editing) {
+        editing = true;
+        const t = document.getElementById('summary-text'), e = document.getElementById('summary-edit');
+        e.value = t.textContent.trim(); t.classList.add('hidden'); e.classList.remove('hidden'); e.focus();
+        const btn = document.querySelectorAll('#actions button')[1];
+        btn.textContent = 'Save & attach'; btn.classList.add('bg-blue-600','text-white'); btn.classList.remove('bg-white','border','border-slate-300');
+        toast('Edit mode', '✎');
+      } else {
+        const e = document.getElementById('summary-edit');
+        document.getElementById('summary-text').textContent = e.value;
+        document.getElementById('summary-text').classList.remove('hidden'); e.classList.add('hidden');
+        editing = false; finish('attached', `${selectedId} edited and linked to ${chosenMatch}.`);
+      }
+    }
+    function doCreate() {
+      showModal('Create new opportunity', 'Create a brand-new opportunity from this insight?', [
+        { label: 'Cancel', primary: false, fn: closeModal },
+        { label: 'Create new', primary: true, fn: () => { closeModal(); finish('new opp', 'New opportunity created, ready for scoring.'); } }
+      ]);
+    }
+    function doReject() {
+      showModal('Reject insight', 'Mark as not relevant and archive?', [
+        { label: 'Cancel', primary: false, fn: closeModal },
+        { label: 'Yes, reject', primary: true, fn: () => { closeModal(); finish('rejected', `${selectedId} archived.`); } }
+      ]);
+    }
+
+    function finish(action, msg) {
+      processed[selectedId] = action;
+      updateCount(); renderList();
+      document.getElementById('detail').classList.add('hidden');
+      document.getElementById('success').classList.remove('hidden');
+      document.getElementById('success-title').textContent = 'Insight ' + action;
+      document.getElementById('success-msg').textContent = msg;
+      toast('Insight ' + action);
+    }
+
+    function backToList() {
+      document.getElementById('success').classList.add('hidden');
+      const next = INSIGHTS.find(i => !processed[i.id]);
+      if (next) { selectInsight(next.id); }
+      else { selectedId = null; renderList(); document.getElementById('empty-state').classList.remove('hidden'); }
+    }
+
+    document.getElementById('modal-backdrop').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    renderList();
+    updateCount();
+  </script>
+</body>
+</html>
