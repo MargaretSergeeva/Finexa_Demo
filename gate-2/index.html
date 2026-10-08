@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finexa · Gate 2 — Marcus</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .fade-in { animation: fadeIn 0.2s ease-out; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (prefers-reduced-motion: reduce) { .fade-in { animation: none; } }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex">
+
+  <!-- Toast -->
+  <div id="toast" class="fixed top-4 right-4 z-50 hidden">
+    <div class="bg-slate-900 text-white px-4 py-2.5 rounded-lg shadow-lg text-sm flex items-center gap-2">
+      <span id="toast-icon">✓</span>
+      <span id="toast-msg"></span>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="w-14 bg-slate-800 text-white flex flex-col items-center py-4 gap-5 flex-shrink-0">
+    <div class="text-xl font-bold">≡</div>
+    <button class="p-2 rounded hover:bg-slate-700 opacity-60" title="Home">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"/></svg>
+    </button>
+    <button class="p-2 rounded hover:bg-slate-700 opacity-60" title="Insights">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+    </button>
+    <button class="p-2 rounded bg-emerald-600" title="Opportunities">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+    </button>
+    <button class="p-2 rounded hover:bg-slate-700 opacity-60 mt-auto" title="Settings">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+    </button>
+  </aside>
+
+  <div class="flex-1 flex flex-col min-w-0">
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between flex-shrink-0">
+      <div class="flex items-center gap-3">
+        <h1 class="text-base font-semibold text-slate-800">Finexa · Feedback Intelligence</h1>
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">Gate 2 · Marcus</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="text-sm text-slate-500" id="progress">0 of 4 reviewed</span>
+        <div class="w-8 h-8 rounded-full bg-emerald-700 text-white flex items-center justify-center text-sm font-medium">M</div>
+      </div>
+    </header>
+
+    <main class="flex-1 flex overflow-hidden">
+
+      <!-- LEFT: Ranked list -->
+      <div class="w-full max-w-sm lg:max-w-md border-r border-slate-200 bg-white flex flex-col flex-shrink-0">
+        <div class="px-4 py-3 border-b border-slate-100">
+          <h2 class="text-sm font-semibold text-slate-700">Prioritized Opportunities</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Ranked by score · highest first</p>
+        </div>
+
+        <div class="flex-1 overflow-y-auto" id="opp-list">
+          <!-- Opportunities injected here -->
+        </div>
+      </div>
+
+      <!-- RIGHT: Detail panel -->
+      <div id="detail-panel" class="flex-1 bg-slate-50 overflow-y-auto min-w-0">
+        <div id="empty-state" class="h-full flex items-center justify-center text-slate-400 text-sm">
+          Select an opportunity to review
+        </div>
+
+        <!-- Detail -->
+        <div id="detail-wrap" class="hidden">
+          <div class="sticky top-0 bg-slate-50/95 backdrop-blur border-b border-slate-200 px-8 py-2.5 flex items-center gap-3">
+            <span class="text-sm text-slate-500" id="detail-crumb"></span>
+            <button onclick="closeDetail()"
+              class="ml-auto text-sm text-slate-500 hover:text-slate-800 px-2 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">
+              Close
+            </button>
+          </div>
+          <div id="detail-content" class="p-8 fade-in"></div>
+        </div>
+
+        <!-- Batch complete -->
+        <div id="complete-wrap" class="hidden p-8 fade-in"></div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const WEIGHTS = { volume: 0.35, severity: 0.30, segment: 0.20, strategic: 0.15 };
+    const FACTOR_LABELS = {
+      volume: 'Insight volume',
+      severity: 'Severity mix',
+      segment: 'Segment weight',
+      strategic: 'Strategic weight'
+    };
+
+    const opportunities = [
+      {
+        id: 'OP-011',
+        title: 'Payment failures lack clear reasons in merchant UI',
+        score: 0.87,
+        status: 'prioritized',
+        insights: 9,
+        severity: { high: 4, medium: 3, low: 2 },
+        segments: '4 Enterprise · 5 SMB',
+        theme: 'Payment status transparency',
+        workflow: 'Payment status',
+        feature_area: 'payments_status',
+        factors: { volume: 0.90, severity: 0.88, segment: 0.85, strategic: 0.80 },
+        explanation: 'High volume of enterprise complaints combined with clear operational impact. Merchants cannot self-serve when payments fail, creating support load and trust issues. Strategic weight is elevated this quarter for merchant experience.',
+        regression: true,
+        last_scored: '2 hours ago',
+        linked_insights: [
+          { id: 'INS-0234', segment: 'Enterprise', sev: 'High', excerpt: 'Only sees "Payment failed" — needs the actual decline reason' },
+          { id: 'INS-0210', segment: 'Enterprise', sev: 'High', excerpt: 'Cannot tell merchant what to do after a failed charge' },
+          { id: 'INS-0187', segment: 'Enterprise', sev: 'High', excerpt: 'Needs explicit failure code in the payment overview' },
+          { id: 'INS-0166', segment: 'SMB', sev: 'Medium', excerpt: 'Opens a support ticket for every failure to learn why' },
+          { id: 'INS-0142', segment: 'SMB', sev: 'Medium', excerpt: 'Retries blindly because no reason is shown' }
+        ]
+      },
+      {
+        id: 'OP-019',
+        title: 'Generic error messages in checkout flow',
+        score: 0.74,
+        status: 'prioritized',
+        insights: 6,
+        severity: { high: 2, medium: 3, low: 1 },
+        segments: '2 Enterprise · 4 SMB',
+        theme: 'Checkout error clarity',
+        workflow: 'Checkout',
+        feature_area: 'checkout_flow',
+        factors: { volume: 0.72, severity: 0.75, segment: 0.70, strategic: 0.80 },
+        explanation: 'Recurring feedback from both SMB and enterprise. Lower enterprise weight than OP-011 but still material. Several tickets already linked in previous quarters.',
+        regression: false,
+        last_scored: '5 hours ago',
+        linked_insights: [
+          { id: 'INS-0229', segment: 'Enterprise', sev: 'High', excerpt: 'Checkout shows one message for every decline type' },
+          { id: 'INS-0201', segment: 'SMB', sev: 'Medium', excerpt: 'Buyers abandon rather than retry with another card' },
+          { id: 'INS-0175', segment: 'SMB', sev: 'Medium', excerpt: 'No guidance on which field caused the failure' },
+          { id: 'INS-0158', segment: 'SMB', sev: 'Low', excerpt: 'Error copy is not localized for EU checkouts' }
+        ]
+      },
+      {
+        id: 'OP-024',
+        title: 'Merchant dashboard lacks payment method health indicators',
+        score: 0.61,
+        status: 'prioritized',
+        insights: 4,
+        severity: { high: 1, medium: 2, low: 1 },
+        segments: '1 Enterprise · 3 SMB',
+        theme: 'Dashboard observability',
+        workflow: 'Merchant dashboard',
+        feature_area: 'merchant_dashboard',
+        factors: { volume: 0.60, severity: 0.65, segment: 0.60, strategic: 0.55 },
+        explanation: 'Moderate frequency. Mostly SMB. Lower strategic weight this quarter. Good candidate for later prioritization.',
+        regression: false,
+        last_scored: '1 day ago',
+        linked_insights: [
+          { id: 'INS-0222', segment: 'Enterprise', sev: 'High', excerpt: 'No way to see if a payment method is degraded' },
+          { id: 'INS-0198', segment: 'SMB', sev: 'Medium', excerpt: 'Finds out about issuer issues from buyers, not the dashboard' },
+          { id: 'INS-0164', segment: 'SMB', sev: 'Medium', excerpt: 'Wants per-method success rates over time' }
+        ]
+      },
+      {
+        id: 'OP-031',
+        title: 'Refund status not visible to merchants in real time',
+        score: 0.53,
+        status: 'prioritized',
+        insights: 3,
+        severity: { high: 0, medium: 2, low: 1 },
+        segments: '0 Enterprise · 3 SMB',
+        theme: 'Refund visibility',
+        workflow: 'Refunds',
+        feature_area: 'payments_refunds',
+        factors: { volume: 0.50, severity: 0.55, segment: 0.40, strategic: 0.72 },
+        explanation: 'Lower volume and mostly lower-tier accounts. Keep on radar but not urgent for current cycle.',
+        regression: false,
+        last_scored: '2 days ago',
+        linked_insights: [
+          { id: 'INS-0217', segment: 'SMB', sev: 'Medium', excerpt: 'Refund shows as pending for days with no status change' },
+          { id: 'INS-0190', segment: 'SMB', sev: 'Medium', excerpt: 'Cannot confirm to the buyer that a refund was sent' },
+          { id: 'INS-0151', segment: 'SMB', sev: 'Low', excerpt: 'Wants an expected settlement date for refunds' }
+        ]
+      },
+      {
+        id: 'OP-038',
+        title: 'Settlement notifications delayed or missing for large batches',
+        score: 0.79,
+        status: 'prioritized',
+        insights: 7,
+        severity: { high: 3, medium: 3, low: 1 },
+        segments: '3 Enterprise · 4 SMB',
+        theme: 'Settlement notifications',
+        workflow: 'Settlement',
+        feature_area: 'payments_settlement',
+        factors: { volume: 0.78, severity: 0.82, segment: 0.78, strategic: 0.75 },
+        explanation: 'Enterprise merchants running high batch volumes report settlement alerts arriving hours late or not at all, forcing manual reconciliation. Clear operational cost and repeat escalations from strategic accounts.',
+        regression: false,
+        last_scored: '4 hours ago',
+        linked_insights: [
+          { id: 'INS-0231', segment: 'Enterprise', sev: 'High', excerpt: 'Settlement email lands hours after funds actually move' },
+          { id: 'INS-0205', segment: 'Enterprise', sev: 'High', excerpt: 'No alert at all for batches over a certain size' },
+          { id: 'INS-0179', segment: 'SMB', sev: 'Medium', excerpt: 'Reconciles manually because notifications are unreliable' },
+          { id: 'INS-0155', segment: 'SMB', sev: 'Medium', excerpt: 'Wants a digest instead of one alert per transaction' }
+        ]
+      },
+      {
+        id: 'OP-046',
+        title: 'Pending vs settled status is ambiguous in payment list',
+        score: 0.68,
+        status: 'prioritized',
+        insights: 5,
+        severity: { high: 1, medium: 3, low: 1 },
+        segments: '2 Enterprise · 3 SMB',
+        theme: 'Payment status transparency',
+        workflow: 'Payment status',
+        feature_area: 'payments_status',
+        factors: { volume: 0.66, severity: 0.68, segment: 0.68, strategic: 0.72 },
+        explanation: 'Merchants cannot reliably distinguish a payment that is still pending from one that has settled, leading to premature order fulfilment and double-checking against the bank.',
+        regression: false,
+        last_scored: '6 hours ago',
+        linked_insights: [
+          { id: 'INS-0226', segment: 'Enterprise', sev: 'High', excerpt: 'Shipped an order on a payment that had not settled' },
+          { id: 'INS-0194', segment: 'SMB', sev: 'Medium', excerpt: '"Pending" and "processing" look identical in the list' },
+          { id: 'INS-0168', segment: 'SMB', sev: 'Medium', excerpt: 'Cross-checks the bank because status is unclear' }
+        ]
+      },
+      {
+        id: 'OP-052',
+        title: 'No proactive alert when a recurring payment starts failing',
+        score: 0.64,
+        status: 'prioritized',
+        insights: 5,
+        severity: { high: 1, medium: 2, low: 2 },
+        segments: '1 Enterprise · 4 SMB',
+        theme: 'Failed payment handling',
+        workflow: 'Recurring payments',
+        feature_area: 'payments_recurring',
+        factors: { volume: 0.64, severity: 0.62, segment: 0.60, strategic: 0.70 },
+        explanation: 'Subscription merchants only discover failing recurring charges when churn shows up later. An earlier signal would let them recover revenue, but volume is moderate and skewed to SMB this cycle.',
+        regression: false,
+        last_scored: '8 hours ago',
+        linked_insights: [
+          { id: 'INS-0224', segment: 'Enterprise', sev: 'High', excerpt: 'Found out about a failing subscription from churn, not an alert' },
+          { id: 'INS-0192', segment: 'SMB', sev: 'Medium', excerpt: 'Wants a heads-up before a card actually expires' },
+          { id: 'INS-0160', segment: 'SMB', sev: 'Low', excerpt: 'No retry schedule visibility for recurring charges' }
+        ]
+      },
+      {
+        id: 'OP-059',
+        title: 'Payout schedule not visible before funds arrive',
+        score: 0.57,
+        status: 'prioritized',
+        insights: 4,
+        severity: { high: 0, medium: 3, low: 1 },
+        segments: '1 Enterprise · 3 SMB',
+        theme: 'Payout visibility',
+        workflow: 'Payouts',
+        feature_area: 'payments_payouts',
+        factors: { volume: 0.56, severity: 0.58, segment: 0.52, strategic: 0.62 },
+        explanation: 'Merchants want to know when their next payout lands for cash-flow planning. Steady low-severity demand, mostly SMB, so it sits mid-queue.',
+        regression: false,
+        last_scored: '1 day ago',
+        linked_insights: [
+          { id: 'INS-0219', segment: 'Enterprise', sev: 'Medium', excerpt: 'Cannot plan cash flow without a payout date' },
+          { id: 'INS-0186', segment: 'SMB', sev: 'Medium', excerpt: 'Asks support when the next payout is due' },
+          { id: 'INS-0149', segment: 'SMB', sev: 'Low', excerpt: 'Wants payout schedule shown on the dashboard' }
+        ]
+      },
+      {
+        id: 'OP-064',
+        title: 'Partial captures not clearly reflected in payment totals',
+        score: 0.49,
+        status: 'prioritized',
+        insights: 3,
+        severity: { high: 0, medium: 2, low: 1 },
+        segments: '0 Enterprise · 3 SMB',
+        theme: 'Payment status transparency',
+        workflow: 'Captures',
+        feature_area: 'payments_capture',
+        factors: { volume: 0.46, severity: 0.50, segment: 0.40, strategic: 0.60 },
+        explanation: 'When a merchant captures less than the authorized amount, the displayed total does not make the partial capture obvious. Low volume, all SMB — keep on radar.',
+        regression: false,
+        last_scored: '2 days ago',
+        linked_insights: [
+          { id: 'INS-0213', segment: 'SMB', sev: 'Medium', excerpt: 'Partial capture makes the total look wrong' },
+          { id: 'INS-0184', segment: 'SMB', sev: 'Medium', excerpt: 'Cannot see authorized vs captured side by side' },
+          { id: 'INS-0147', segment: 'SMB', sev: 'Low', excerpt: 'Wants remaining authorization shown after capture' }
+        ]
+      },
+      {
+        id: 'OP-071',
+        title: 'Currency of a payment is not obvious on multi-currency accounts',
+        score: 0.42,
+        status: 'prioritized',
+        insights: 3,
+        severity: { high: 0, medium: 1, low: 2 },
+        segments: '0 Enterprise · 3 SMB',
+        theme: 'Payment status transparency',
+        workflow: 'Multi-currency',
+        feature_area: 'payments_currency',
+        factors: { volume: 0.40, severity: 0.42, segment: 0.38, strategic: 0.55 },
+        explanation: 'On accounts handling several currencies, the payment list does not surface the currency prominently, causing occasional misreads. Low frequency and severity; lowest priority this cycle.',
+        regression: false,
+        last_scored: '3 days ago',
+        linked_insights: [
+          { id: 'INS-0208', segment: 'SMB', sev: 'Medium', excerpt: 'Misread a EUR amount as GBP in the list' },
+          { id: 'INS-0181', segment: 'SMB', sev: 'Low', excerpt: 'Currency code is easy to miss in the row' },
+          { id: 'INS-0144', segment: 'SMB', sev: 'Low', excerpt: 'Wants a currency filter on the payment list' }
+        ]
+      }
+    ];
+
+    opportunities.sort((a, b) => b.score - a.score);
+
+    let selectedId = null;
+    let decisions = {};      // id -> { action, note, at }
+    let scoreOpen = false;
+    let evidenceOpen = false;
+
+    function toast(msg, icon = '✓') {
+      document.getElementById('toast-msg').textContent = msg;
+      document.getElementById('toast-icon').textContent = icon;
+      const t = document.getElementById('toast');
+      t.classList.remove('hidden');
+      setTimeout(() => t.classList.add('hidden'), 2500);
+    }
+
+    function computed(o) {
+      return Object.keys(WEIGHTS).reduce((sum, k) => sum + o.factors[k] * WEIGHTS[k], 0);
+    }
+
+    function updateProgress() {
+      const n = Object.keys(decisions).length;
+      document.getElementById('progress').textContent = `${n} of ${opportunities.length} reviewed`;
+    }
+
+    function renderList() {
+      const list = document.getElementById('opp-list');
+      list.innerHTML = opportunities.map((o, i) => {
+        const isSelected = o.id === selectedId;
+        const d = decisions[o.id];
+        const badge = !d ? ''
+          : d.action === 'approved'
+            ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-100 text-emerald-800">Approved</span>'
+            : '<span class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-200 text-slate-700">Skipped</span>';
+        return `
+          <button onclick="selectOpp('${o.id}')"
+            class="w-full text-left px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition
+              ${isSelected ? 'bg-emerald-50 border-l-4 border-l-emerald-600' : 'border-l-4 border-l-transparent'}
+              ${d ? 'opacity-60' : ''}">
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="text-xs font-semibold text-slate-400">#${i + 1}</span>
+                  <span class="text-sm font-medium text-slate-900 truncate">${o.id}</span>
+                  ${o.regression ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-100 text-amber-800">Regression</span>' : ''}
+                  ${badge}
+                </div>
+                <div class="text-xs text-slate-600 mt-0.5 line-clamp-2">${o.title}</div>
+                <div class="text-[11px] text-slate-400 mt-1">${o.insights} insights · ${o.segments}</div>
+              </div>
+              <div class="text-right flex-shrink-0">
+                <div class="text-lg font-bold ${o.score >= 0.8 ? 'text-emerald-600' : o.score >= 0.65 ? 'text-blue-600' : 'text-slate-600'}">${o.score.toFixed(2)}</div>
+                <div class="text-[10px] text-slate-400">score</div>
+              </div>
+            </div>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function factorBars(o) {
+      return Object.keys(WEIGHTS).map(k => {
+        const v = o.factors[k];
+        const contribution = v * WEIGHTS[k];
+        return `
+          <div>
+            <div class="flex items-baseline justify-between text-xs mb-1">
+              <span class="font-medium text-slate-700">${FACTOR_LABELS[k]}</span>
+              <span class="text-slate-400">weight ${WEIGHTS[k].toFixed(2)} · adds ${contribution.toFixed(2)}</span>
+            </div>
+            <div class="h-2 rounded-full bg-slate-200 overflow-hidden">
+              <div class="h-full rounded-full ${v >= 0.8 ? 'bg-emerald-500' : v >= 0.6 ? 'bg-blue-500' : 'bg-slate-400'}" style="width:${(v * 100).toFixed(0)}%"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function evidenceTable(o) {
+      const sevCls = s => s === 'High' ? 'text-red-600 font-medium' : s === 'Medium' ? 'text-amber-600 font-medium' : 'text-slate-500';
+      const rows = o.linked_insights.map(i => `
+        <tr>
+          <td class="px-2.5 py-1.5 font-medium whitespace-nowrap">${i.id}</td>
+          <td class="px-2.5 py-1.5 whitespace-nowrap">${i.segment}</td>
+          <td class="px-2.5 py-1.5 ${sevCls(i.sev)} whitespace-nowrap">${i.sev}</td>
+          <td class="px-2.5 py-1.5 text-slate-600">${i.excerpt}</td>
+        </tr>
+      `).join('');
+      const shown = o.linked_insights.length;
+      return `
+        <div class="border border-slate-200 rounded-lg overflow-hidden text-xs bg-white">
+          <table class="w-full">
+            <thead class="bg-slate-50 text-slate-500">
+              <tr>
+                <th class="px-2.5 py-1.5 text-left font-medium">ID</th>
+                <th class="px-2.5 py-1.5 text-left font-medium">Segment</th>
+                <th class="px-2.5 py-1.5 text-left font-medium">Sev</th>
+                <th class="px-2.5 py-1.5 text-left font-medium">Excerpt</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">${rows}</tbody>
+          </table>
+        </div>
+        <div class="text-xs text-slate-400 mt-1.5">Showing ${shown} of ${o.insights} linked insights</div>
+      `;
+    }
+
+    function toggleScore() {
+      scoreOpen = !scoreOpen;
+      const box = document.getElementById('score-box');
+      const chev = document.getElementById('score-chevron');
+      box.classList.toggle('hidden', !scoreOpen);
+      chev.textContent = scoreOpen ? '▾' : '▸';
+    }
+
+    function toggleEvidence() {
+      evidenceOpen = !evidenceOpen;
+      const box = document.getElementById('evidence-box');
+      const chev = document.getElementById('evidence-chevron');
+      box.classList.toggle('hidden', !evidenceOpen);
+      chev.textContent = evidenceOpen ? '▾' : '▸';
+    }
+
+    function selectOpp(id) {
+      selectedId = id;
+      renderList();
+      const o = opportunities.find(x => x.id === id);
+      const d = decisions[id];
+      document.getElementById('empty-state').classList.add('hidden');
+      document.getElementById('complete-wrap').classList.add('hidden');
+      document.getElementById('detail-wrap').classList.remove('hidden');
+      document.getElementById('detail-panel').scrollTop = 0;
+      document.getElementById('detail-crumb').textContent = `${o.id} · ${o.workflow}`;
+      const panel = document.getElementById('detail-content');
+      const sev = o.severity;
+
+      panel.innerHTML = `
+        <div class="flex items-start justify-between mb-1 gap-4">
+          <div>
+            <div class="text-xs text-slate-500 font-medium">${o.id} · ${o.status}</div>
+            <h2 class="text-xl font-semibold text-slate-900 mt-0.5">${o.title}</h2>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <div class="text-3xl font-bold ${o.score >= 0.8 ? 'text-emerald-600' : 'text-blue-600'}">${o.score.toFixed(2)}</div>
+            <div class="text-xs text-slate-400">priority score</div>
+          </div>
+        </div>
+
+        ${o.regression ? `
+          <div class="mt-3 flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-900">
+            <svg class="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+            <span>Potential regression — new insights arrived after a previous fix.</span>
+          </div>
+        ` : ''}
+
+        <div class="mt-5 grid grid-cols-3 gap-3">
+          <div class="bg-white rounded-lg border border-slate-200 p-3">
+            <div class="text-xs text-slate-500">Linked insights</div>
+            <div class="text-xl font-semibold text-slate-900 mt-0.5">${o.insights}</div>
+          </div>
+          <div class="bg-white rounded-lg border border-slate-200 p-3">
+            <div class="text-xs text-slate-500">Severity mix</div>
+            <div class="text-sm font-medium text-slate-800 mt-1">${sev.high}H · ${sev.medium}M · ${sev.low}L</div>
+          </div>
+          <div class="bg-white rounded-lg border border-slate-200 p-3">
+            <div class="text-xs text-slate-500">Segments</div>
+            <div class="text-sm font-medium text-slate-800 mt-1">${o.segments}</div>
+          </div>
+        </div>
+
+        <div class="mt-5">
+          <button onclick="toggleScore()" class="flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-emerald-700 uppercase tracking-wide focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded">
+            <span id="score-chevron">${scoreOpen ? '▾' : '▸'}</span> Score breakdown
+          </button>
+          <div id="score-box" class="${scoreOpen ? '' : 'hidden'} mt-2 bg-white rounded-lg border border-slate-200 p-4 space-y-3">
+            ${factorBars(o)}
+            <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+              <span class="text-slate-500">Weighted total</span>
+              <span class="font-semibold text-slate-800">${computed(o).toFixed(2)} → published ${o.score.toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5">
+          <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Score explanation</h3>
+          <div class="bg-white rounded-lg border border-slate-200 p-4 text-sm text-slate-700 leading-relaxed max-w-3xl">
+            ${o.explanation}
+          </div>
+          <div class="text-xs text-slate-400 mt-1.5">Last scored ${o.last_scored}</div>
+        </div>
+
+        <div class="mt-5">
+          <button onclick="toggleEvidence()" class="flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-emerald-700 uppercase tracking-wide focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded">
+            <span id="evidence-chevron">${evidenceOpen ? '▾' : '▸'}</span> Evidence · ${o.insights} linked insights
+          </button>
+          <div id="evidence-box" class="${evidenceOpen ? '' : 'hidden'} mt-2">
+            ${evidenceTable(o)}
+          </div>
+        </div>
+
+        <div class="mt-5 grid grid-cols-3 gap-3 text-sm">
+          <div>
+            <div class="text-xs text-slate-500">Theme</div>
+            <div class="font-medium text-slate-800 mt-0.5">${o.theme}</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500">Workflow</div>
+            <div class="font-medium text-slate-800 mt-0.5">${o.workflow}</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500">Feature area</div>
+            <div class="font-medium text-slate-800 mt-0.5">${o.feature_area}</div>
+          </div>
+        </div>
+
+        <div class="mt-8 pt-5 border-t border-slate-200">
+          ${d ? `
+            <div class="flex items-start gap-3">
+              <div class="px-4 py-2.5 ${d.action === 'approved' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'} text-sm font-medium rounded-lg">
+                ${d.action === 'approved' ? '✓ Approved for drafting' : '→ Skipped this cycle'}
+              </div>
+              <button onclick="undo('${o.id}')" class="px-3 py-2.5 text-sm text-slate-500 hover:text-slate-800">Undo</button>
+            </div>
+            ${d.note ? `<div class="mt-3 text-sm text-slate-600 bg-white border border-slate-200 rounded-lg p-3"><span class="text-xs text-slate-400 block mb-0.5">Decision note · ${d.at}</span>${d.note}</div>` : '<div class="mt-3 text-xs text-slate-400">No note recorded.</div>'}
+          ` : `
+            <label for="note-input" class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Decision note <span class="font-normal normal-case text-slate-400">(optional · saved to audit trail)</span></label>
+            <textarea id="note-input" rows="2" placeholder="Why this decision? e.g. enterprise escalation confirmed with support"
+              class="mt-1.5 w-full text-sm border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"></textarea>
+            <div class="mt-3 flex gap-3">
+              <button onclick="decide('${o.id}','approved')" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg shadow-sm">
+                Approve for drafting
+              </button>
+              <button onclick="decide('${o.id}','skipped')" class="px-4 py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-sm font-medium rounded-lg">
+                Skip for now
+              </button>
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    function decide(id, action) {
+      const input = document.getElementById('note-input');
+      const note = input ? input.value.trim() : '';
+      const at = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      decisions[id] = { action, note, at };
+      updateProgress();
+      renderList();
+      toast(`${id} ${action}${note ? ' · note saved' : ''}`, action === 'approved' ? '✓' : '→');
+
+      if (Object.keys(decisions).length === opportunities.length) {
+        showComplete();
+        return;
+      }
+      const next = opportunities.find(o => !decisions[o.id]);
+      if (next) selectOpp(next.id); else selectOpp(id);
+    }
+
+    function undo(id) {
+      delete decisions[id];
+      updateProgress();
+      renderList();
+      selectOpp(id);
+      toast(`${id} moved back to queue`, '↺');
+    }
+
+    function showComplete() {
+      document.getElementById('detail-wrap').classList.add('hidden');
+      document.getElementById('empty-state').classList.add('hidden');
+      const wrap = document.getElementById('complete-wrap');
+      wrap.classList.remove('hidden');
+      selectedId = null;
+      renderList();
+
+      const approvedList = opportunities.filter(o => decisions[o.id].action === 'approved');
+      const skippedList = opportunities.filter(o => decisions[o.id].action === 'skipped');
+      const rows = opportunities.map(o => {
+        const d = decisions[o.id];
+        return `
+          <tr>
+            <td class="px-3 py-2 font-medium whitespace-nowrap">${o.id}</td>
+            <td class="px-3 py-2">
+              <span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${d.action === 'approved' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'}">${d.action}</span>
+            </td>
+            <td class="px-3 py-2 text-slate-500 whitespace-nowrap">${d.at}</td>
+            <td class="px-3 py-2 text-slate-600">${d.note || '<span class="text-slate-400">—</span>'}</td>
+          </tr>
+        `;
+      }).join('');
+
+      wrap.innerHTML = `
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+          <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-xl mb-3">✓</div>
+          <h2 class="text-lg font-semibold text-slate-900">Queue reviewed</h2>
+          <p class="text-sm text-slate-600 mt-1">
+            ${approvedList.length} approved for drafting, ${skippedList.length} skipped. Approved opportunities move to ticket drafting; every decision below is written to the audit trail.
+          </p>
+
+          <div class="mt-5 border border-slate-200 rounded-lg overflow-hidden text-xs">
+            <table class="w-full">
+              <thead class="bg-slate-50 text-slate-500">
+                <tr>
+                  <th class="px-3 py-2 text-left font-medium">Opportunity</th>
+                  <th class="px-3 py-2 text-left font-medium">Decision</th>
+                  <th class="px-3 py-2 text-left font-medium">Time</th>
+                  <th class="px-3 py-2 text-left font-medium">Note</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">${rows}</tbody>
+            </table>
+          </div>
+
+          <div class="mt-5 flex gap-3">
+            <button onclick="sendBatch()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg shadow-sm">
+              Send ${approvedList.length} to drafting
+            </button>
+            <button onclick="resetQueue()" class="px-4 py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-sm font-medium rounded-lg">
+              Reset queue
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function sendBatch() {
+      const n = opportunities.filter(o => decisions[o.id] && decisions[o.id].action === 'approved').length;
+      toast(`${n} opportunities sent to drafting`);
+    }
+
+    function resetQueue() {
+      decisions = {};
+      selectedId = null;
+      evidenceOpen = false;
+      document.getElementById('complete-wrap').classList.add('hidden');
+      document.getElementById('detail-wrap').classList.add('hidden');
+      document.getElementById('empty-state').classList.remove('hidden');
+      updateProgress();
+      renderList();
+      toast('Queue reset', '↺');
+    }
+
+    function closeDetail() {
+      document.getElementById('detail-wrap').classList.add('hidden');
+      if (Object.keys(decisions).length === opportunities.length) {
+        showComplete();
+        return;
+      }
+      document.getElementById('empty-state').classList.remove('hidden');
+      selectedId = null;
+      renderList();
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && !document.getElementById('detail-wrap').classList.contains('hidden')) {
+        closeDetail();
+      }
+    });
+
+    // Init
+    renderList();
+    updateProgress();
+  </script>
+</body>
+</html>

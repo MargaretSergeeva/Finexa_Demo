@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finexa Payments Pilot — Executive Risk & Activity Hub</title>
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --border: #e2e8f0;
+            --primary: #2563eb;
+            --primary-light: #eff6ff;
+            --critical-bg: #fef2f2; --critical-text: #991b1b; --critical-border: #f87171;
+            --high-bg: #fff7ed; --high-text: #9a3412; --high-border: #fb923c;
+            --medium-bg: #fefce8; --medium-text: #854d0e; --medium-border: #facc15;
+            --low-bg: #f0fdf4; --low-text: #166534; --low-border: #4ade80;
+            --open-bg: #fee2e2; --open-text: #991b1b;
+            --progress-bg: #fef3c7; --progress-text: #92400e;
+            --closed-bg: #dcfce7; --closed-text: #166534;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 24px;
+        }
+
+        .header { margin-bottom: 20px; }
+        .header h1 { font-size: 24px; margin: 0 0 6px 0; }
+        .header p { color: #64748b; margin: 0; font-size: 14px; }
+
+        .tab-nav {
+            display: flex;
+            gap: 8px;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #64748b;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: -2px;
+        }
+
+        .tab-btn:hover { color: var(--primary); }
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background: var(--primary-light);
+            border-radius: 6px 6px 0 0;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .kpi-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .kpi-card {
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .kpi-card .label { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600; }
+        .kpi-card .value { font-size: 26px; font-weight: 700; margin-top: 4px; }
+
+        .decision-banner {
+            background: #fff1f2;
+            border: 1px solid #fecdd3;
+            border-left: 4px solid #e11d48;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+        }
+
+        .decision-banner h2 {
+            margin: 0 0 12px 0;
+            font-size: 16px;
+            color: #9f1239;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .decision-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 16px;
+        }
+
+        .decision-item {
+            background: #ffffff;
+            border: 1px solid #ffe4e6;
+            border-radius: 6px;
+            padding: 14px;
+        }
+
+        .decision-item h3 {
+            margin: 0 0 6px 0;
+            font-size: 14px;
+            color: #881337;
+        }
+
+        .decision-item p {
+            margin: 0 0 8px 0;
+            font-size: 13px;
+            color: #4c0519;
+            line-height: 1.4;
+        }
+
+        .decision-rationale {
+            font-size: 12px;
+            color: #be123c;
+            background: #fff1f2;
+            padding: 6px 10px;
+            border-radius: 4px;
+            border-left: 2px solid #e11d48;
+        }
+
+        .controls {
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+        }
+
+        .control-group { display: flex; flex-direction: column; gap: 4px; }
+        .control-group label { font-size: 12px; font-weight: 600; color: #475569; }
+
+        select, input {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            outline: none;
+            font-size: 13px;
+            background-color: #fff;
+        }
+
+        .sort-group select { border-color: var(--primary); font-weight: 600; color: var(--primary); }
+
+        .risk-grid { display: flex; flex-direction: column; gap: 12px; }
+
+        .risk-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            padding: 16px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .risk-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+        .risk-title-area { cursor: pointer; flex-grow: 1; }
+        .risk-id-title { display: flex; align-items: center; gap: 12px; }
+        .risk-id { font-weight: 700; font-size: 13px; padding: 4px 8px; border-radius: 4px; background: #f1f5f9; }
+        .risk-title { font-weight: 600; font-size: 15px; }
+
+        .badges { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .badge { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 12px; border: 1px solid transparent; }
+
+        .status-select {
+            font-size: 12px; font-weight: 700; padding: 4px 8px; border-radius: 12px; border: 1px solid transparent; cursor: pointer; outline: none;
+        }
+        .status-select.status-open { background: var(--open-bg); color: var(--open-text); border-color: #fca5a5; }
+        .status-select.status-in-progress { background: var(--progress-bg); color: var(--progress-text); border-color: #fcd34d; }
+        .status-select.status-closed { background: var(--closed-bg); color: var(--closed-text); border-color: #86efac; }
+
+        .badge-critical { background: var(--critical-bg); color: var(--critical-text); border-color: var(--critical-border); }
+        .badge-high { background: var(--high-bg); color: var(--high-text); border-color: var(--high-border); }
+        .badge-medium { background: var(--medium-bg); color: var(--medium-text); border-color: var(--medium-border); }
+        .badge-low { background: var(--low-bg); color: var(--low-text); border-color: var(--low-border); }
+
+        @media (max-width: 700px) {
+            .risk-header { flex-direction: column; }
+            .badges { align-self: flex-end; }
+        }
+
+        .risk-meta { display: flex; gap: 16px; font-size: 13px; color: #64748b; margin-top: 8px; flex-wrap: wrap; }
+
+        .risk-details {
+            margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--border); display: none; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; font-size: 13px;
+        }
+        .risk-card.expanded .risk-details { display: grid; }
+        .detail-block h4 { margin: 0 0 4px 0; color: #334155; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .detail-block p { margin: 0; color: #475569; line-height: 1.45; }
+
+        .analytics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+        .analytics-card { background: var(--card-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .analytics-card h3 { margin: 0 0 16px 0; font-size: 15px; color: #334155; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+        .stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+        .progress-bar-bg { background: #e2e8f0; border-radius: 4px; height: 8px; width: 100%; margin-top: 4px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s ease; }
+
+        .taxonomy-section { margin-bottom: 24px; }
+        .taxonomy-section h3 { font-size: 16px; color: #1e293b; margin: 0 0 12px 0; padding-bottom: 6px; border-bottom: 2px solid var(--border); }
+        .taxonomy-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+        .taxonomy-card { background: var(--card-bg); padding: 16px; border-radius: 8px; border: 1px solid var(--border); }
+        .taxonomy-card h4 { margin: 0 0 6px 0; color: var(--primary); font-size: 14px; }
+        .taxonomy-card p { margin: 0; font-size: 13px; color: #475569; line-height: 1.4; }
+
+        .scale-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+        .scale-table th, .scale-table td { text-align: left; padding: 8px 12px; border: 1px solid var(--border); }
+        .scale-table th { background: #f1f5f9; color: #334155; font-weight: 600; }
+
+        /* Activity Hub table styles */
+        .activity-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); font-size: 13px; }
+        .activity-table th, .activity-table td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+        .activity-table th { background: #f1f5f9; color: #334155; font-weight: 600; }
+        .activity-table tr:hover { background: #f8fafc; }
+
+        /* Top Risks Headlist (Analytics tab) */
+        .top-risks-section { margin-bottom: 28px; }
+        .top-risks-section h3 { font-size: 16px; color: #1e293b; margin: 0 0 12px 0; padding-bottom: 6px; border-bottom: 2px solid var(--border); }
+        .top-risks-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); font-size: 13px; }
+        .top-risks-table th, .top-risks-table td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+        .top-risks-table th { background: #f1f5f9; color: #334155; font-weight: 600; }
+        .top-risks-table tr:last-child td { border-bottom: none; }
+        .top-risks-table tr:hover { background: #f8fafc; }
+        .severity-pill { display: inline-block; font-weight: 700; font-size: 13px; padding: 4px 10px; border-radius: 12px; border: 1px solid transparent; }
+
+        .type-badge { font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 4px; display: inline-block; }
+        .type-decision { background: #ffe4e6; color: #9f1239; border: 1px solid #fecdd3; }
+        .type-action { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+        .type-spof { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+        .type-validation { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+
+        .risk-tag { font-weight: 700; color: #334155; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Finexa Payments Pilot — Executive Risk & Activity Hub</h1>
+        <p>Interactive Master Risk Register, Resolution Activity Mapping, Executive Analytics & Risk Taxonomy</p>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('cockpitTab', this)">📋 Risk Cockpit</button>
+        <button class="tab-btn" onclick="switchTab('activityTab', this)">⚡ Risk Resolution Activity Hub</button>
+        <button class="tab-btn" onclick="switchTab('analyticsTab', this)">📊 Executive Analytics</button>
+        <button class="tab-btn" onclick="switchTab('taxonomyTab', this)">📐 Taxonomy & Scoring Framework</button>
+    </div>
+
+    <!-- TAB 1: RISK COCKPIT -->
+    <div id="cockpitTab" class="tab-content active">
+        <!-- Metrics Bar -->
+        <div class="kpi-container">
+            <div class="kpi-card">
+                <div class="label">Total Risks</div>
+                <div class="value" id="kpi-total">0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="label">Open Risks</div>
+                <div class="value" id="kpi-open" style="color: var(--open-text)">0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="label">In Progress</div>
+                <div class="value" id="kpi-progress" style="color: var(--progress-text)">0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="label">Closed Risks</div>
+                <div class="value" id="kpi-closed" style="color: var(--closed-text)">0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="label">Active Critical</div>
+                <div class="value" id="kpi-critical" style="color: var(--critical-text)">0</div>
+            </div>
+        </div>
+
+        <!-- Interactive Filters & Sort -->
+        <div class="controls">
+            <div class="control-group">
+                <label>Search Keyword</label>
+                <input type="text" id="searchFilter" placeholder="Search risks, cause, objectives..." oninput="filterRisks()">
+            </div>
+            <div class="control-group sort-group">
+                <label>Sort Order</label>
+                <select id="sortBy" onchange="filterRisks()">
+                    <option value="SEVERITY_DESC">Severity (High → Low)</option>
+                    <option value="SEVERITY_ASC">Severity (Low → High)</option>
+                    <option value="WEEK_ASC">Due Date (Earliest First)</option>
+                    <option value="ID_ASC">Risk ID (A → Z)</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Category</label>
+                <select id="categoryFilter" onchange="filterRisks()">
+                    <option value="ALL">All Categories</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Severity Level</label>
+                <select id="severityFilter" onchange="filterRisks()">
+                    <option value="ALL">All Severities</option>
+                    <option value="Critical">Critical (16-25)</option>
+                    <option value="High">High (11-15)</option>
+                    <option value="Medium">Medium (6-10)</option>
+                    <option value="Low">Low (1-5)</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Owner</label>
+                <select id="ownerFilter" onchange="filterRisks()">
+                    <option value="ALL">All Owners</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Due Week</label>
+                <select id="weekFilter" onchange="filterRisks()">
+                    <option value="ALL">All Weeks</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Status</label>
+                <select id="statusFilter" onchange="filterRisks()">
+                    <option value="ALL">All Statuses</option>
+                    <option value="Open">Open</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Closed">Closed</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Risk Register List -->
+        <div class="risk-grid" id="riskGrid"></div>
+    </div>
+
+    <!-- TAB 2: RESOLUTION ACTIVITIES HUB -->
+    <div id="activityTab" class="tab-content">
+        <div class="kpi-container">
+            <div class="kpi-card"><div class="label">Total Activities</div><div class="value" id="act-total">0</div></div>
+            <div class="kpi-card"><div class="label">Decision Requests</div><div class="value" style="color:#9f1239;" id="act-decisions">0</div></div>
+            <div class="kpi-card"><div class="label">Action Tasks</div><div class="value" style="color:#1d4ed8;" id="act-tasks">0</div></div>
+            <div class="kpi-card"><div class="label">Dependencies & SPOFs</div><div class="value" style="color:#c2410c;" id="act-spofs">0</div></div>
+            <div class="kpi-card"><div class="label">Assumption Checks</div><div class="value" style="color:#15803d;" id="act-validations">0</div></div>
+        </div>
+
+        <!-- Activity Filters -->
+        <div class="controls">
+            <div class="control-group">
+                <label>Filter by Mitigation Type</label>
+                <select id="typeFilter" onchange="filterActivities()">
+                    <option value="ALL">All Types</option>
+                    <option value="Decision Request">Decision Requests</option>
+                    <option value="Action Task">Action Tasks</option>
+                    <option value="Dependency / SPOF">Dependencies / SPOFs</option>
+                    <option value="Assumption Validation">Assumption Validations</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Filter by Owner</label>
+                <select id="actOwnerFilter" onchange="filterActivities()">
+                    <option value="ALL">All Owners</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Filter by Target / Week</label>
+                <select id="actWeekFilter" onchange="filterActivities()">
+                    <option value="ALL">All Timeline Targets</option>
+                    <option value="Week 1">Week 1</option>
+                    <option value="Week 2">Week 2</option>
+                    <option value="Week 3">Week 3</option>
+                    <option value="Week 4">Week 4</option>
+                    <option value="Week 5">Week 5</option>
+                    <option value="Week 10">Week 10</option>
+                    <option value="Continuous">Continuous (SPOFs)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Activity Master Table -->
+        <table class="activity-table">
+            <thead>
+                <tr>
+                    <th style="width: 15%;">Mitigation Kind</th>
+                    <th style="width: 25%;">Activity / Focus</th>
+                    <th>Detailed Description / Impact / Safeguard</th>
+                    <th style="width: 15%;">Owner</th>
+                    <th style="width: 10%;">Target</th>
+                    <th style="width: 10%;">Mitigated Risk</th>
+                </tr>
+            </thead>
+            <tbody id="activityTableBody">
+                <!-- JS Inject -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- TAB 3: ANALYTICS & SUMMARY -->
+    <div id="analyticsTab" class="tab-content">
+
+        <!-- Top Risks Headlist -->
+        <div class="top-risks-section">
+            <h3>🔥 Top Risks Headlist</h3>
+            <table class="top-risks-table">
+                <thead>
+                    <tr>
+                        <th style="width: 6%;">ID</th>
+                        <th style="width: 18%;">Risk Title</th>
+                        <th style="width: 8%;">Severity</th>
+                        <th style="width: 34%;">Next Important Action</th>
+                        <th style="width: 34%;">Decision Needed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="risk-id">RE-01</span></td>
+                        <td><strong>Data Privacy & PII Leakage</strong></td>
+                        <td><span class="severity-pill badge-critical">20</span></td>
+                        <td>Validate Cloud DLP regex patterns against raw sample dataset in Week 1 sandbox.</td>
+                        <td>Simone Dubois formal approval of Cloud DLP de-identification rules before live data ingestion.</td>
+                    </tr>
+                    <tr>
+                        <td><span class="risk-id">TE-02</span></td>
+                        <td><strong>Human Gate Rubber-Stamping / Cognitive Fatigue</strong></td>
+                        <td><span class="severity-pill badge-critical">16</span></td>
+                        <td>Configure Appsmith UI to enforce mandatory rationale text entry on Gate 3 approvals and lock 20% random sample for manual complexity check.</td>
+                        <td>Marcus Bauer & Priya Patel agreement on mandatory gate fields and audit thresholds.</td>
+                    </tr>
+                    <tr>
+                        <td><span class="risk-id">RE-02</span></td>
+                        <td><strong>Works Council Exposure (BetrVG §87)</strong></td>
+                        <td><span class="severity-pill badge-high">15</span></td>
+                        <td>Strip individual user identifiers from gate_decisions schema and verify role-only logging (Payment_PM).</td>
+                        <td>Formal sign-off from Works Council representative / Legal on anonymized logging design.</td>
+                    </tr>
+                    <tr>
+                        <td><span class="risk-id">OP-01</span></td>
+                        <td><strong>Operational Bandwidth & Gate Latency</strong></td>
+                        <td><span class="severity-pill badge-high">15</span></td>
+                        <td>Deploy automated BigQuery latency monitoring view with Appsmith/email notification triggers.</td>
+                        <td>Executive agreement from Elena Vance on 48-hour SLA escalation protocol.</td>
+                    </tr>
+                    <tr>
+                        <td><span class="risk-id">TE-06</span></td>
+                        <td><strong>Total Infrastr./ API Outage</strong></td>
+                        <td><span class="severity-pill badge-high">15</span></td>
+                        <td>Build and test the BYPASS_AI = TRUE manual CRUD toggle in Appsmith UI.</td>
+                        <td>Engineering Lead sign-off on fallback interface readiness.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="analytics-grid">
+            <div class="analytics-card">
+                <h3>Severity Distribution</h3>
+                <div id="severityAnalytics"></div>
+            </div>
+            <div class="analytics-card">
+                <h3>Risk Exposure by Taxonomy Domain</h3>
+                <div id="domainAnalytics"></div>
+            </div>
+            <div class="analytics-card">
+                <h3>Status Resolution Progress</h3>
+                <div id="statusAnalytics"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 4: TAXONOMY & METHODOLOGY -->
+    <div id="taxonomyTab" class="tab-content">
+
+        <!-- Taxonomy Domains -->
+        <div class="taxonomy-section">
+            <h3>1. Risk Taxonomy Domains</h3>
+            <div class="taxonomy-grid">
+                <div class="taxonomy-card">
+                    <h4>Delivery (Scope / Schedule / Cost)</h4>
+                    <p>Timeframe slippage within the 12-week runway, scope creep, or resource diversion.</p>
+                </div>
+                <div class="taxonomy-card">
+                    <h4>Technical / Architecture / Data</h4>
+                    <p>LLM reasoning errors, vector matching inaccuracies, schema breaks, wrapper API timeouts, and text-to-SQL injections.</p>
+                </div>
+                <div class="taxonomy-card">
+                    <h4>Operational / Process</h4>
+                    <p>Reviewer gate latency, spreadsheet regression, operational support escalation burial, and workflow friction.</p>
+                </div>
+                <div class="taxonomy-card">
+                    <h4>People / Resourcing</h4>
+                    <p>Cognitive fatigue, rubber-stamping, consultant rollover/handover vacuum, and team adoption resistance.</p>
+                </div>
+                <div class="taxonomy-card">
+                    <h4>Vendor / Procurement</h4>
+                    <p>Upstream LLM vendor service outages, API rate limiting, and third-party dependency failures.</p>
+                </div>
+                <div class="taxonomy-card">
+                    <h4>Security / Privacy / Compliance</h4>
+                    <p>PII leakage, Cloud DLP bypass, GDPR right-to-erasure conflicts, and Works Council (BetrVG §87) co-determination challenges.</p>
+                </div>
+                <div class="taxonomy-card">
+                    <h4>Stakeholder / Change / Adoption</h4>
+                    <p>Executive alignment, loss of PM decision authority, and cross-functional trust breakdown.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Likelihood Scale -->
+        <div class="taxonomy-section">
+            <h3>2. Likelihood Scale (1–5)</h3>
+            <table class="scale-table">
+                <thead>
+                    <tr>
+                        <th style="width: 10%;">Score</th>
+                        <th style="width: 25%;">Rating</th>
+                        <th>Probability & Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>1</strong></td><td>Rare</td><td>Unlikely to occur during the 12-week pilot (&lt;10% chance).</td></tr>
+                    <tr><td><strong>2</strong></td><td>Unlikely</td><td>Possible, but unexpected during pilot duration (10–30% chance).</td></tr>
+                    <tr><td><strong>3</strong></td><td>Moderate</td><td>Anticipated to occur at least once during pilot execution (31–60% chance).</td></tr>
+                    <tr><td><strong>4</strong></td><td>Likely</td><td>High probability of recurring during pilot execution (61–85% chance).</td></tr>
+                    <tr><td><strong>5</strong></td><td>Almost Certain</td><td>Almost guaranteed to occur without immediate controls (&gt;85% chance).</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Impact Scale -->
+        <div class="taxonomy-section">
+            <h3>3. Impact Scale (1–5)</h3>
+            <table class="scale-table">
+                <thead>
+                    <tr>
+                        <th style="width: 10%;">Score</th>
+                        <th style="width: 25%;">Rating</th>
+                        <th>Severity Impact Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>1</strong></td><td>Negligible</td><td>Minor operational inconvenience; zero impact on 12-week timeline or compliance.</td></tr>
+                    <tr><td><strong>2</strong></td><td>Minor</td><td>Small delay (&lt;2 days); minor manual workaround required; no external stakeholder exposure.</td></tr>
+                    <tr><td><strong>3</strong></td><td>Moderate</td><td>Noticeable delivery impact (3–5 days delay); temporary gate stall; engineering clarification loops required.</td></tr>
+                    <tr><td><strong>4</strong></td><td>Major</td><td>Significant milestone delay (&gt;1 week); partial failure of human gates; risk of non-compliance flag.</td></tr>
+                    <tr><td><strong>5</strong></td><td>Critical</td><td>Total pilot shutdown; severe breach of GDPR/regulatory rules; permanent loss of stakeholder trust.</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Severity Formula & Action Thresholds -->
+        <div class="taxonomy-section">
+            <h3>4. Severity Score Formula & Thresholds (Score = Likelihood × Impact)</h3>
+            <table class="scale-table">
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">Score Range</th>
+                        <th style="width: 20%;">Level</th>
+                        <th>Governance Action & Escalation Protocol</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="background: var(--low-bg);">
+                        <td><strong>1 – 5</strong></td>
+                        <td><strong style="color: var(--low-text);">Low</strong></td>
+                        <td>Acceptable risk; monitor through standard weekly operational updates.</td>
+                    </tr>
+                    <tr style="background: var(--medium-bg);">
+                        <td><strong>6 – 10</strong></td>
+                        <td><strong style="color: var(--medium-text);">Medium</strong></td>
+                        <td>Tolerable risk; requires proactive mitigation and assigned owner tracking.</td>
+                    </tr>
+                    <tr style="background: var(--high-bg);">
+                        <td><strong>11 – 15</strong></td>
+                        <td><strong style="color: var(--high-text);">High</strong></td>
+                        <td>Unacceptable risk; requires active management, clear early warnings, and PM oversight.</td>
+                    </tr>
+                    <tr style="background: var(--critical-bg);">
+                        <td><strong>16 – 25</strong></td>
+                        <td><strong style="color: var(--critical-text);">Critical</strong></td>
+                        <td>Severe threat; immediate executive intervention, formal decision request, and steering escalation required.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <script>
+        const risks = [
+            {
+                id: "RE-01",
+                title: "Cloud DLP Edge Failure & PII Leakage",
+                statement: "If Cloud DLP edge rules fail to scrub unstructured text, then raw customer PII enters LLM prompts, leading to GDPR violations and immediate pilot shut-down by Simone Dubois.",
+                category: "Security / Privacy / Compliance",
+                domain: "Security",
+                rootCause: "Flawed regex/DLP rule configurations on free-text inputs.",
+                impactedObjectives: "Strict security control, GDPR compliance, stakeholder trust.",
+                likelihood: 4, impact: 5, score: 20, severity: "20 (Critical)", level: "Critical",
+                owner: "Simone Dubois (Risk & Compliance)", week: "Week 1", weekNum: 1, status: "Open",
+                nextAction: "Validate Cloud DLP regex patterns against raw sample dataset in Week 1 sandbox.",
+                decisionNeeded: "Simone Dubois formal approval of Cloud DLP de-identification rules before live data ingestion.",
+                controlStatus: "Fully Controlled (Technical)",
+                trigger: "DLP sanitization error flags in ingestion logs; unscrubbed PII string detected in BigQuery staging.",
+                mitigation: "Pre-ingestion Cloud DLP scrub on all text; store customer references only via cryptographic tokens (customer_ref).",
+                contingency: "Immediate execution of data containment protocol; isolate service account and trigger manual data purge."
+            },
+            {
+                id: "TE-02",
+                title: "Reviewer Cognitive Fatigue & Rubber-Stamping",
+                statement: "If reviewers experience cognitive fatigue from processing high feedback volume, then they blindly approve AI-generated drafts at Gate 3, leading to inaccurate or hallucinated user stories entering engineering sprints.",
+                category: "People / Resourcing",
+                domain: "People",
+                rootCause: "High throughput volume and repetitive validation UI tasks.",
+                impactedObjectives: "Improved backlog quality, reduced clarification loops with engineering.",
+                likelihood: 4, impact: 4, score: 16, severity: "16 (Critical)", level: "Critical",
+                owner: "Marcus Bauer / Priya Patel", week: "Week 5", weekNum: 5, status: "Open",
+                nextAction: "Configure Appsmith UI to enforce mandatory rationale text entry on Gate 3 approvals and lock 20% random sample for manual complexity check.",
+                decisionNeeded: "Marcus Bauer & Priya Patel agreement on mandatory gate fields and audit thresholds.",
+                controlStatus: "Fully Controlled (UI Workflow)",
+                trigger: "Gate 3 approval speed < 15 seconds per story; 0% edit rate across 20 consecutive tickets.",
+                mitigation: "Split UI display into explicit 'Known Facts' vs 'AI Hypotheses'; lock automated sync on every 5th record requiring manual complexity point setting.",
+                contingency: "Re-audit previous 20 Gate 3 approvals; flag suspicious items for manual re-review by Marcus Bauer."
+            },
+            {
+                id: "OP-01",
+                title: "Reviewer Operational Bandwidth Bottlenecks",
+                statement: "If core reviewers (Marcus/Priya) are constrained by daily operational duties, then human check-gates stall, leading to discovery bottlenecks and failure to meet the 12-week pilot runway.",
+                category: "Delivery (Scope / Schedule / Cost)",
+                domain: "Delivery",
+                rootCause: "Competing daily priorities and lack of dedicated pilot time allocation.",
+                impactedObjectives: "12-week execution schedule, faster turnaround from discovery to backlog.",
+                likelihood: 5, impact: 3, score: 15, severity: "15 (High)", level: "High",
+                owner: "Marcus Bauer (Senior PM)", week: "Week 2", weekNum: 2, status: "Open",
+                nextAction: "Deploy automated BigQuery latency monitoring view with Appsmith/email notification triggers.",
+                decisionNeeded: "Executive agreement from Elena Vance on 48-hour SLA escalation protocol.",
+                controlStatus: "Pending Executive SLA Sign-off",
+                trigger: "Gate review queue depth > 15 pending items; average gate decision latency > 24 hours.",
+                mitigation: "Implement Appsmith UI to compress manual review time by 88%; deploy automated telemetry alerts to Elena Vance when latency exceeds 48h.",
+                contingency: "Temporarily delegate Gate 1 verification tasks to secondary product analyst or schedule daily 15-min review blocks."
+            },
+            {
+                id: "TE-06",
+                title: "Upstream LLM Infrastructure Outage",
+                statement: "If upstream AI provider APIs experience extended outages, then automated command pipelines fail, leading to total paralysis of the feedback processing workflow.",
+                category: "Vendor / Procurement",
+                domain: "Vendor",
+                rootCause: "Third-party LLM service downtime or infrastructure failures.",
+                impactedObjectives: "Turnaround speed, reliable discovery synthesis.",
+                likelihood: 3, impact: 5, score: 15, severity: "15 (High)", level: "High",
+                owner: "Priya Patel (Engineering Lead)", week: "Week 3", weekNum: 3, status: "Open",
+                nextAction: "Build and test the BYPASS_AI = TRUE manual CRUD toggle in Appsmith UI.",
+                decisionNeeded: "Engineering Lead sign-off on fallback interface readiness.",
+                controlStatus: "Fully Controlled (Fallback Architecture)",
+                trigger: "API HTTP 5xx error responses; model timeout errors in system event logs.",
+                mitigation: "Decouple UI from model core; build environment flag (BYPASS_AI = TRUE) for seamless fallback.",
+                contingency: "Activate BYPASS_AI flag to convert Appsmith UI into a manual CRUD spreadsheet interface with zero downtime."
+            },
+            {
+                id: "RE-02",
+                title: "Works Council (BetrVG §87) Audit Exposure",
+                statement: "If decision logs capture reviewer metrics, then the pilot is perceived as employee monitoring under BetrVG §87, leading to Works Council intervention and project suspension.",
+                category: "Security / Privacy / Compliance",
+                domain: "Security",
+                rootCause: "High-granularity audit logging within Appsmith decision tables.",
+                impactedObjectives: "Works Council compliance, unhindered pilot execution.",
+                likelihood: 3, impact: 5, score: 15, severity: "15 (High)", level: "High",
+                owner: "Simone Dubois (Risk & Compliance)", week: "Week 1", weekNum: 1, status: "Open",
+                nextAction: "Strip individual user identifiers from gate_decisions schema and verify role-only logging (Payment_PM).",
+                decisionNeeded: "Formal sign-off from Works Council representative / Legal on anonymized logging design.",
+                controlStatus: "Blocked Pending Governance Decision",
+                trigger: "Works Council inquiry or formal union representative objection regarding log metrics.",
+                mitigation: "Store functional corporate roles (e.g., Payment_PM) instead of personal employee IDs in gate_decisions table.",
+                contingency: "Execute formal sign-off agreement with Works Council reconfirming logs are used strictly for AI prompt evaluation."
+            },
+            {
+                id: "OP-04",
+                title: "Baseline ROI & Time-Savings Validation Failure",
+                statement: "If baseline processing metrics are not formally tracked in BigQuery, then time-savings ROI cannot be validated, leading to executive skepticism and project cancellation.",
+                category: "Operational / Process",
+                domain: "Operational",
+                rootCause: "Lack of automated time-tracking telemetries against baseline benchmarks.",
+                impactedObjectives: "Validate pilot ROI, prove 88% velocity improvement to management.",
+                likelihood: 3, impact: 4, score: 12, severity: "12 (High)", level: "High",
+                owner: "External Consultant", week: "Week 1", weekNum: 1, status: "Open",
+                nextAction: "Embed automated benchmark tracking against team-reported baseline figures in BigQuery baseline views.",
+                decisionNeeded: "Executive sign-off on target ROI metrics and time-saving evaluation criteria.",
+                controlStatus: "Fully Controlled (BigQuery Tracking)",
+                trigger: "Missing telemetry logs on Gate review duration; inability to compare AI throughput against team-reported baseline.",
+                mitigation: "Log automated timestamp diffs in BigQuery against pre-pilot baseline benchmarks to quantify real-time ROI.",
+                contingency: "Manual audit of time-tracking logs across sample discovery batch to demonstrate velocity gain."
+            },
+            { id: "OP-03", title: "Feature Bias & Support Escalation Burial", statement: "If product groups prioritize purely feature-driven requests, then high-severity support escalations are buried, leading to unresolved merchant payment issues and support friction.", category: "Operational / Process", domain: "Operational", rootCause: "Prioritization algorithm over-weighting feature value over operational risk.", impactedObjectives: "Traceability, balanced backlog, support ops trust.", likelihood: 4, impact: 3, score: 12, severity: "12 (High)", level: "High", owner: "Liam O'Connor (Support Ops)", week: "Week 5", weekNum: 5, status: "Open", nextAction: "Implement regression_flag automation in prioritization logic.", decisionNeeded: "No executive decision required; managed via standard technical mitigation.", controlStatus: "Fully Controlled (Automated Override)", trigger: "Support ticket count rising while related backlog items remain unassigned; Liam O'Connor escalation in review meeting.", mitigation: "Automated regression_flag = TRUE triggers when fresh feedback matches closed Jira items, overriding standard weights.", contingency: "Perform weekly manual review of bottom-tier backlog items with Liam O'Connor to force-rank critical escalations." },
+            { id: "TE-01", title: "Model Hallucination & Priority Skew", statement: "If the LLM generates hallucinated customer pain points or applies incorrect weights, then prioritization outputs become skewed, leading to misaligned roadmap decisions.", category: "Technical / Architecture / Data", domain: "Technical", rootCause: "Model hallucination or uncalibrated prompt weighting.", impactedObjectives: "Evidence-based delivery planning, stakeholder confidence.", likelihood: 3, impact: 4, score: 12, severity: "12 (High)", level: "High", owner: "Marcus Bauer (Senior PM)", week: "Week 4", weekNum: 4, status: "Open", nextAction: "Deploy opportunity_priority_metrics SQL view and validate against manual audit.", decisionNeeded: "No executive decision required; managed via standard technical mitigation.", controlStatus: "Fully Controlled (Deterministic Scoring)", trigger: "High human override rate at Gate 2 (>35%); complaints from PMs regarding odd priority rankings.", mitigation: "Priority score computed via deterministic SQL views (opportunity_priority_metrics), using LLM purely for plain-language explanation.", contingency: "Adjust criteria weights in configuration tables; trigger prompt tuning freeze." },
+            { id: "TE-03", title: "Inconsistent Cross-PM Execution", statement: "If multiple PMs execute AI commands inconsistently, then insight outputs diverge, leading to recurring data fragmentation across product domains.", category: "Operational / Process", domain: "Operational", rootCause: "Lack of standardized operating procedures for prompt execution.", impactedObjectives: "Consistency in product documentation and taxonomy.", likelihood: 3, impact: 3, score: 9, severity: "9 (Medium)", level: "Medium", owner: "Marcus Bauer (Senior PM)", week: "Week 2", weekNum: 2, status: "Open", nextAction: "Publish and enforce six-field artifact schema across PM command calls.", decisionNeeded: "No executive decision required; managed via standard technical mitigation.", controlStatus: "Fully Controlled (Schema Enforcement)", trigger: "Schema validation errors in BigQuery; wide variance in field length/content across PM logs.", mitigation: "Enforce rigid six-field artifact schema across all command calls; store scoring parameters in version-controlled config tables.", contingency: "Conduct PM alignment session; publish mandatory Command Execution Standard Operating Procedure (SOP)." },
+            { id: "TE-05", title: "Multi-Step Agent Reasoning Loop", statement: "If multi-step agent reasoning hits recursive execution loops, then API timeouts occur, leading to inflated token costs and frozen user interface screens.", category: "Technical / Architecture / Data", domain: "Technical", rootCause: "Complex unstructured feedback inputs causing infinite agent function-calling loops.", impactedObjectives: "UI performance, operational cost control.", likelihood: 3, impact: 3, score: 9, severity: "9 (Medium)", level: "Medium", owner: "External Consultant / Priya Patel", week: "Week 3", weekNum: 3, status: "Open", nextAction: "Hardcode max_iterations and timeout thresholds into agent_wiring layer.", decisionNeeded: "No executive decision required; managed via standard technical mitigation.", controlStatus: "Fully Controlled (Technical)", trigger: "Execution latency >15 seconds; token usage spikes in provider API analytics dashboard.", mitigation: "Hardcode deterministic thresholds (max_iterations = 3, timeout = 10s) directly into agent_wiring layer.", contingency: "Terminate process immediately on breach and drop fallback error token into Gate 1 manual triage queue." },
+            { id: "TE-07", title: "Cross-System State Disconnection", statement: "If network timeouts occur after Jira ticket creation but before BigQuery sync status update, then state disconnection occurs, leading to duplicate Jira ticket creation.", category: "Technical / Architecture / Data", domain: "Technical", rootCause: "Unhandled network latency during cross-system sync call.", impactedObjectives: "Integration reliability, clean engineering backlog.", likelihood: 3, impact: 3, score: 9, severity: "9 (Medium)", level: "Medium", owner: "Priya Patel (Engineering Lead)", week: "Week 4", weekNum: 4, status: "Open", nextAction: "Implement Two-Phase Commit sync between BigQuery and Jira wrapper.", decisionNeeded: "No executive decision required; managed via standard technical mitigation.", controlStatus: "Fully Controlled (Technical)", trigger: "Jira tickets created without matching sync_status = TRUE in BigQuery; duplicate ticket reports from engineering.", mitigation: "Implement Two-Phase Commit design; mark BigQuery record as PENDING_SYNC before calling Jira API.", contingency: "Roll back transaction if no confirmation ID returns within 30s; flag record for manual review before re-dispatch." },
+            { id: "TE-09", title: "Enterprise Account Priority Skew", statement: "If the priority formula heavily favors large revenue accounts, then mass-merchant infrastructure bugs are suppressed, leading to systemic platform churn among SMBs.", category: "Technical / Architecture / Data", domain: "Technical", rootCause: "Linear weighting of merchant account tier without logarithmic dampening.", impactedObjectives: "Balanced merchant experience, retention across SMB & Enterprise.", likelihood: 3, impact: 3, score: 9, severity: "9 (Medium)", level: "Medium", owner: "Marcus Bauer (Senior PM)", week: "Week 4", weekNum: 4, status: "Open", nextAction: "Apply logarithmic scaling to enterprise weighting in priority formula.", decisionNeeded: "No executive decision required; managed via standard technical mitigation.", controlStatus: "Fully Controlled (Technical)", trigger: "SMB-flagged bugs remaining at low priority despite high ticket volume (>20 tickets).", mitigation: "Apply logarithmic scaling to enterprise complaint counts in opportunity_priority_metrics SQL view.", contingency: "Manually adjust customer value weight parameters in formula_weights config table." },
+            { id: "OP-02", title: "User Onboarding Inertia & Spreadsheet Bypass", statement: "If users experience onboarding friction with Appsmith, then they bypass the UI and revert to local spreadsheets, leading to re-creation of disconnected data silos.", category: "Stakeholder / Change / Adoption", domain: "Stakeholder", rootCause: "Habitual inertia and perceived overhead of learning new UI.", impactedObjectives: "Centralized insight repository, eliminating fragmented spreadsheets.", likelihood: 3, impact: 3, score: 9, severity: "9 (Medium)", level: "Medium", owner: "Marcus Bauer (Senior PM)", week: "Week 3", weekNum: 3, status: "Open", nextAction: "Monitor Appsmith command velocity and trigger onboarding coaching alerts.", decisionNeeded: "No executive decision required; managed via standard technical mitigation.", controlStatus: "Fully Controlled (Monitoring)", trigger: "Appsmith command execution velocity < 5 calls/day; direct updates to local Excel files detected.", mitigation: "Monitor command velocity via BigQuery logging tier; automate warning flags when activity drops.", contingency: "Conduct 1-on-1 coaching session with reviewers to resolve UI friction points." },
+            { id: "RE-03", title: "GDPR Right-to-Erasure Cascade Loss", statement: "If a merchant submits a GDPR right-to-erasure request, then a full cascade wipe deletes historical raw data, leading to distorted priority scores and lost ticket evidence.", category: "Security / Privacy / Compliance", domain: "Security", rootCause: "Unrefined automated deletion scripts executing cascading deletes across derived tables.", impactedObjectives: "Auditability, historical backlog integrity.", likelihood: 2, impact: 4, score: 8, severity: "8 (Medium)", level: "Medium", owner: "Simone Dubois (Risk & Compliance)", week: "Week 2", weekNum: 2, status: "Open", nextAction: "Confirm Soft Erasure Policy implementation across derived data tables.", decisionNeeded: "Dependent on RE-03 erasure policy decision (see Executive Action Item above).", controlStatus: "Pending Policy Decision", trigger: "Ingestion of formal Right-to-Erasure request ticket from legal/compliance team.", mitigation: "Enforce Soft Erasure Policy: delete merchant_id string from registry, retaining anonymized derived text insights.", contingency: "Re-run priority metric views post-anonymization to verify historical score stability." },
+            { id: "TE-10", title: "Backend Database Schema Break", statement: "If backend engineers modify raw BigQuery tables without updating interfaces, then the /ask_data MCP text-to-SQL mapping breaks, leading to broken executive analytics reports.", category: "Technical / Architecture / Data", domain: "Technical", rootCause: "Unannounced database schema migrations on active source tables.", impactedObjectives: "Reliable operational reporting via /ask_data.", likelihood: 2, impact: 3, score: 6, severity: "6 (Medium)", level: "Medium", owner: "Priya Patel (Engineering Lead)", week: "Week 4", weekNum: 4, status: "Open", nextAction: "Implement schema abstraction views ahead of any BigQuery table changes.", decisionNeeded: "No executive decision required; managed via standard technical mitigation.", controlStatus: "Fully Controlled (Technical)", trigger: "SQL execution errors in /ask_data query log; schema mismatch alerts.", mitigation: "Implement schema abstraction views; force MCP server to query stable SQL views rather than raw tables.", contingency: "Re-bind MCP prompt templates to updated view schema within 4 hours." },
+            { id: "OP-06", title: "Consultant Offboarding Handover Vacuum", statement: "If the external consultant offboards without thorough knowledge transfer, then an operational vacuum occurs, leading to tool abandonment post-pilot.", category: "People / Resourcing", domain: "People", rootCause: "Single-point reliance on consultant for prompt engineering and workflow architecture.", impactedObjectives: "Long-term sustainability and system ownership.", likelihood: 2, impact: 3, score: 6, severity: "6 (Medium)", level: "Medium", owner: "Elena Vance (Head of Product)", week: "Week 10", weekNum: 10, status: "Open", nextAction: "Schedule 2-week shadowing and handover sprint before consultant offboarding.", decisionNeeded: "Elena Vance sign-off on internal ownership transition timeline.", controlStatus: "Fully Controlled (Governance)", trigger: "Offboarding date approaching without completed technical architecture documentation.", mitigation: "Restrict consultant to temporary Responsible (R) role; ensure internal staff hold Accountable (A) authority from Day 1.", contingency: "Conduct mandatory 2-week shadowing and handover sprint prior to contract end." },
+            { id: "TE-04", title: "Prompt Injection via Customer Feedback", statement: "If malicious prompt injection text is embedded inside raw customer feedback, then the LLM interprets it as system instructions, leading to unauthorized backlog score manipulation.", category: "Technical / Architecture / Data", domain: "Technical", rootCause: "Lack of input sanitization delimiters in agent system prompts.", impactedObjectives: "System integrity, tamper-proof prioritization.", likelihood: 2, impact: 2, score: 4, severity: "4 (Low)", level: "Low", owner: "External Consultant", week: "Week 2", weekNum: 2, status: "Open", nextAction: "Implement prompt sandboxing delimiters in agent_wiring layer.", decisionNeeded: "No executive decision required; managed via standard technical mitigation.", controlStatus: "Fully Controlled (Technical)", trigger: "Unexpected command execution patterns in LLM logs; sudden score jump for single ticket.", mitigation: "Implement prompt sandboxing in agent_wiring; treat raw_text variables as non-executable strings within strict delimiters.", contingency: "Reset impacted opportunity score; update prompt sandboxing rules in GitHub repository." },
+            { id: "TE-08", title: "Text-to-SQL Injection in Analytics Agent", statement: "If malicious text-to-SQL queries are submitted via /ask_data, then the LLM generates destructive SQL statements, leading to database corruption or unauthorized data deletion.", category: "Security / Privacy / Compliance", domain: "Security", rootCause: "Unrestricted database connection string assigned to MCP conversational agent.", impactedObjectives: "Data security, system availability.", likelihood: 1, impact: 4, score: 4, severity: "4 (Low)", level: "Low", owner: "Priya Patel (Engineering Lead)", week: "Week 3", weekNum: 3, status: "Open", nextAction: "Restrict /ask_data MCP agent to Read-Only IAM credentials.", decisionNeeded: "No executive decision required; managed via standard technical mitigation.", controlStatus: "Fully Controlled (Technical)", trigger: "SQL syntax errors or non-SELECT queries detected in BigQuery audit logs.", mitigation: "Isolate MCP server tier; grant strictly Read-Only database connection credentials to /ask_data agent.", contingency: "Re-verify IAM read-only permissions on BigQuery dataset; terminate active session." }
+        ];
+
+        const resolutionActivities = [
+            // WEEK 1
+            { kind: "Decision Request", title: "Cloud DLP de-identification rules & merchant_id handling", desc: "Formal approval of regex patterns & tokenization rules. Live data ingestion halted if delayed.", owner: "Simone Dubois", target: "Week 1", risk: "RE-01", typeClass: "type-decision" },
+            { kind: "Action Task", title: "Execute Cloud DLP Validation Test", desc: "Run DLP scrubbing on 25 sample interview transcripts to verify 0% PII leak rate.", owner: "Simone Dubois", target: "Week 1", risk: "RE-01", typeClass: "type-action" },
+            { kind: "Action Task", title: "Configure Role-Only Logging Schema", desc: "Update gate_decisions BigQuery table DDL to log functional role metadata only.", owner: "External Consultant", target: "Week 1", risk: "RE-02", typeClass: "type-action" },
+            { kind: "Action Task", title: "Establish Baseline Metric Capture", desc: "Finalize pure manual baseline timing benchmarks, captured from the team, in BigQuery baseline view.", owner: "External Consultant", target: "Week 1", risk: "OP-04", typeClass: "type-action" },
+            { kind: "Action Task", title: "Provision Appsmith Access & Roles", desc: "Grant Appsmith UI access and permission roles to Marcus Bauer and Priya Patel.", owner: "Priya Patel", target: "Week 1", risk: "OP-01, OP-02", typeClass: "type-action" },
+            { kind: "Action Task", title: "Configure Latency Alert Telemetry", desc: "Build automated query alerting Elena Vance if avg_gate_latency_hours > 48.", owner: "External Consultant", target: "Week 1", risk: "OP-01", typeClass: "type-action" },
+            { kind: "Assumption Validation", title: "Merchant Account Tier Availability", desc: "Run test query against merchant database to confirm field population rate > 95%.", owner: "External Consultant", target: "Week 1", risk: "TE-09", typeClass: "type-validation" },
+            { kind: "Assumption Validation", title: "Jira API Service Account Support", desc: "Generate API token and execute test script to create draft issue in Jira sandbox.", owner: "Priya Patel", target: "Week 1", risk: "TE-07", typeClass: "type-validation" },
+            { kind: "Assumption Validation", title: "Reviewer Bandwidth Allocation", desc: "Confirm dedicated daily gate review slot in Marcus Bauer and Priya Patel calendars.", owner: "Elena Vance", target: "Week 1", risk: "OP-01", typeClass: "type-validation" },
+
+            // WEEK 2
+            { kind: "Decision Request", title: "Soft Erasure Policy for GDPR Right-to-Erasure", desc: "Choose soft erasure (anonymize derived text) vs hard wipe. Prevents loss of ticket history.", owner: "Simone Dubois / Legal", target: "Week 2", risk: "RE-03", typeClass: "type-decision" },
+            { kind: "Decision Request", title: "Works Council Anonymity Framework (BetrVG §87)", desc: "Sign-off on logging Payment_PM roles rather than employee user IDs to prevent labor halt.", owner: "Simone Dubois / Legal", target: "Week 2", risk: "RE-02", typeClass: "type-decision" },
+            { kind: "Decision Request", title: "48-Hour Gate Latency SLA & Escalation Protocol", desc: "Executive mandate to alert Elena Vance if gate queues exceed 48h latency threshold.", owner: "Elena Vance", target: "Week 2", risk: "OP-01", typeClass: "type-decision" },
+            { kind: "Action Task", title: "Publish Command Execution SOP", desc: "Deliver standard operating guidelines for /process-feedback and /draft-user-story.", owner: "Marcus Bauer", target: "Week 2", risk: "TE-03", typeClass: "type-action" },
+            { kind: "Action Task", title: "Configure Prompt Sandboxing Rules", desc: "Implement input sanitization delimiters to block prompt injection via raw feedback text.", owner: "External Consultant", target: "Week 2", risk: "TE-04", typeClass: "type-action" },
+            { kind: "Assumption Validation", title: "Merchant ID Legal Status", desc: "Submit formal legal query to Simone Dubois / Legal counsel for written opinion.", owner: "Simone Dubois", target: "Week 2", risk: "RE-01", typeClass: "type-validation" },
+
+            // WEEK 3
+            { kind: "Action Task", title: "Build & Test API Outage Toggle (BYPASS_AI)", desc: "Build environment flag in Appsmith UI to instantly revert to manual CRUD mode during outage.", owner: "Priya Patel", target: "Week 3", risk: "TE-06", typeClass: "type-action" },
+            { kind: "Action Task", title: "Hardcode Agent Reasoning Loop Thresholds", desc: "Configure max_iterations = 3 and timeout = 10s to prevent infinite agent execution loops.", owner: "External Consultant", target: "Week 3", risk: "TE-05", typeClass: "type-action" },
+            { kind: "Action Task", title: "Isolate MCP Analytics Server IAM Credentials", desc: "Restrict /ask_data Model Context Protocol database connection strictly to Read-Only access.", owner: "Priya Patel", target: "Week 3", risk: "TE-08", typeClass: "type-action" },
+            { kind: "Action Task", title: "Set Up UI Velocity Telemetry Monitoring", desc: "Track command execution rate; trigger alert if Appsmith activity falls below 5 calls/day.", owner: "Marcus Bauer", target: "Week 3", risk: "OP-02", typeClass: "type-action" },
+
+            // WEEK 4
+            { kind: "Action Task", title: "Implement Deterministic Priority Formula View", desc: "Deploy opportunity_priority_metrics SQL view with weighted formula and plain-language LLM output.", owner: "Marcus Bauer", target: "Week 4", risk: "TE-01", typeClass: "type-action" },
+            { kind: "Action Task", title: "Build Jira Wrapper Two-Phase Commit Sync", desc: "Code PENDING_SYNC status handling in Jira API wrapper to prevent duplicate ticket creation.", owner: "Priya Patel", target: "Week 4", risk: "TE-07", typeClass: "type-action" },
+            { kind: "Action Task", title: "Apply Logarithmic Scaling to Revenue Weights", desc: "Dampen enterprise account priority weight formula to protect SMB platform bug triage.", owner: "Marcus Bauer", target: "Week 4", risk: "TE-09", typeClass: "type-action" },
+            { kind: "Action Task", title: "Implement Database Schema Abstraction Views", desc: "Lock MCP server queries to stable SQL abstraction views rather than raw BigQuery tables.", owner: "Priya Patel", target: "Week 4", risk: "TE-10", typeClass: "type-action" },
+
+            // WEEK 5
+            { kind: "Action Task", title: "Configure Gate 3 Cognitive Fatigue Locks", desc: "Code Appsmith UI logic enforcing mandatory rationale entries and locking 20% random samples.", owner: "Marcus / Priya", target: "Week 5", risk: "TE-02", typeClass: "type-action" },
+            { kind: "Action Task", title: "Deploy Support Escalation Regression Override", desc: "Set regression_flag = TRUE when fresh feedback matches closed items to prevent ticket burial.", owner: "Liam O'Connor", target: "Week 5", risk: "OP-03", typeClass: "type-action" },
+
+            // WEEK 10
+            { kind: "Action Task", title: "Execute Consultant Offboarding Knowledge Transfer", desc: "Conduct 2-week shadowing sprint and transition operational authority to internal product staff.", owner: "Elena Vance", target: "Week 10", risk: "OP-06", typeClass: "type-action" },
+
+            // SYSTEM DEPENDENCIES & CONTINUOUS MONITORING
+            { kind: "Dependency / SPOF", title: "Google Cloud DLP Engine", desc: "Essential edge control. Failure or improper syntax leaks raw PII to third-party APIs.", owner: "Simone Dubois", target: "Continuous", risk: "RE-01", typeClass: "type-spof" },
+            { kind: "Dependency / SPOF", title: "BigQuery Central Staging Repository", desc: "Single Source of Truth (SSOT). Schema locks or permissions stop the toolchain.", owner: "Priya Patel", target: "Continuous", risk: "TE-06, TE-10", typeClass: "type-spof" },
+            { kind: "Dependency / SPOF", title: "Jira Dispatch Wrapper Script", desc: "Holds Jira API keys. Wrapper timeouts cause cross-system state disconnection.", owner: "Priya Patel", target: "Continuous", risk: "TE-06, TE-07", typeClass: "type-spof" },
+            { kind: "Dependency / SPOF", title: "Marcus Bauer (Senior PM Bandwidth)", desc: "Primary Gate 1/2 reviewer. Operational distraction freezes review queue.", owner: "Elena Vance", target: "Continuous", risk: "OP-01, OP-02", typeClass: "type-spof" }
+        ];
+
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        /* ---- Risk Cockpit ---- */
+        function setupDropdowns() {
+            const categories = [...new Set(risks.map(r => r.category))];
+            const owners = [...new Set(risks.map(r => r.owner))];
+            const weeks = [...new Set(risks.map(r => r.week))].sort();
+
+            const catSelect = document.getElementById('categoryFilter');
+            categories.forEach(c => catSelect.innerHTML += `<option value="${c}">${c}</option>`);
+
+            const ownerSelect = document.getElementById('ownerFilter');
+            owners.forEach(o => ownerSelect.innerHTML += `<option value="${o}">${o}</option>`);
+
+            const weekSelect = document.getElementById('weekFilter');
+            weeks.forEach(w => weekSelect.innerHTML += `<option value="${w}">${w}</option>`);
+        }
+
+        function updateStatus(id, newStatus) {
+            const item = risks.find(r => r.id === id);
+            if (item) {
+                item.status = newStatus;
+                filterRisks();
+            }
+        }
+
+        function renderAnalytics() {
+            const severities = ['Critical', 'High', 'Medium', 'Low'];
+            const sevColors = { Critical: '#ef4444', High: '#f97316', Medium: '#eab308', Low: '#22c55e' };
+            let sevHtml = '';
+            severities.forEach(s => {
+                const count = risks.filter(r => r.level === s).length;
+                const pct = Math.round((count / risks.length) * 100);
+                sevHtml += `
+                    <div style="margin-bottom: 12px;">
+                        <div class="stat-row">
+                            <span><strong>${s} Risk</strong></span>
+                            <span>${count} (${pct}%)</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" style="width: ${pct}%; background-color: ${sevColors[s]};"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('severityAnalytics').innerHTML = sevHtml;
+
+            const statuses = ['Open', 'In Progress', 'Closed'];
+            const statusColors = { Open: '#ef4444', 'In Progress': '#f59e0b', Closed: '#22c55e' };
+            let statHtml = '';
+            statuses.forEach(st => {
+                const count = risks.filter(r => r.status === st).length;
+                const pct = Math.round((count / risks.length) * 100);
+                statHtml += `
+                    <div style="margin-bottom: 12px;">
+                        <div class="stat-row">
+                            <span><strong>${st}</strong></span>
+                            <span>${count} (${pct}%)</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" style="width: ${pct}%; background-color: ${statusColors[st]};"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('statusAnalytics').innerHTML = statHtml;
+
+            const domains = [
+                { name: 'Delivery (Scope/Schedule/Cost)', key: 'Delivery' },
+                { name: 'Technical / Architecture / Data', key: 'Technical' },
+                { name: 'Operational / Process', key: 'Operational' },
+                { name: 'People / Resourcing', key: 'People' },
+                { name: 'Vendor / Procurement', key: 'Vendor' },
+                { name: 'Security / Privacy / Compliance', key: 'Security' },
+                { name: 'Stakeholder / Change / Adoption', key: 'Stakeholder' }
+            ];
+            let domHtml = '';
+            domains.forEach(d => {
+                const count = risks.filter(r => r.domain === d.key).length;
+                const pct = Math.round((count / risks.length) * 100);
+                domHtml += `
+                    <div style="margin-bottom: 12px;">
+                        <div class="stat-row">
+                            <span><strong>${d.name}</strong></span>
+                            <span>${count} Risks</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" style="width: ${pct}%; background-color: #2563eb;"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('domainAnalytics').innerHTML = domHtml;
+        }
+
+        function renderRisks(data) {
+            const grid = document.getElementById('riskGrid');
+            grid.innerHTML = '';
+
+            document.getElementById('kpi-total').innerText = risks.length;
+            document.getElementById('kpi-open').innerText = risks.filter(r => r.status === 'Open').length;
+            document.getElementById('kpi-progress').innerText = risks.filter(r => r.status === 'In Progress').length;
+            document.getElementById('kpi-closed').innerText = risks.filter(r => r.status === 'Closed').length;
+            document.getElementById('kpi-critical').innerText = risks.filter(r => r.level === 'Critical' && r.status !== 'Closed').length;
+
+            data.forEach(risk => {
+                const badgeClass = `badge-${risk.level.toLowerCase()}`;
+                const statusClass = `status-${risk.status.toLowerCase().replace(" ", "-")}`;
+
+                grid.innerHTML += `
+                    <div class="risk-card" id="card-${risk.id}">
+                        <div class="risk-header">
+                            <div class="risk-title-area" onclick="toggleCard('${risk.id}')">
+                                <div class="risk-id-title">
+                                    <span class="risk-id">${risk.id}</span>
+                                    <span class="risk-title">${risk.title}</span>
+                                </div>
+                                <div class="risk-meta">
+                                    <span><strong>Owner:</strong> ${risk.owner}</span>
+                                    <span><strong>Due:</strong> ${risk.week}</span>
+                                    <span><strong>Category:</strong> ${risk.category}</span>
+                                </div>
+                            </div>
+                            <div class="badges">
+                                <select class="status-select ${statusClass}" onchange="updateStatus('${risk.id}', this.value)">
+                                    <option value="Open" ${risk.status === 'Open' ? 'selected' : ''}>Open</option>
+                                    <option value="In Progress" ${risk.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                                    <option value="Closed" ${risk.status === 'Closed' ? 'selected' : ''}>Closed</option>
+                                </select>
+                                <span class="badge ${badgeClass}">${risk.severity}</span>
+                            </div>
+                        </div>
+                        <div class="risk-details">
+                            <div class="detail-block" style="grid-column: 1 / -1;">
+                                <h4>Risk Statement (If... then... leading to...)</h4>
+                                <p>${risk.statement}</p>
+                            </div>
+                            <div class="detail-block">
+                                <h4>Root Cause</h4>
+                                <p>${risk.rootCause}</p>
+                            </div>
+                            <div class="detail-block">
+                                <h4>Impacted Objectives</h4>
+                                <p>${risk.impactedObjectives}</p>
+                            </div>
+                            <div class="detail-block">
+                                <h4>Early Warning Signal / Trigger</h4>
+                                <p>${risk.trigger}</p>
+                            </div>
+                            <div class="detail-block">
+                                <h4>Preventive Mitigation</h4>
+                                <p>${risk.mitigation}</p>
+                            </div>
+                            <div class="detail-block" style="grid-column: 1 / -1;">
+                                <h4>Contingency / Fallback Plan</h4>
+                                <p>${risk.contingency}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            renderAnalytics();
+        }
+
+        function toggleCard(id) {
+            document.getElementById(`card-${id}`).classList.toggle('expanded');
+        }
+
+        function filterRisks() {
+            const search = document.getElementById('searchFilter').value.toLowerCase();
+            const sortBy = document.getElementById('sortBy').value;
+            const category = document.getElementById('categoryFilter').value;
+            const severity = document.getElementById('severityFilter').value;
+            const owner = document.getElementById('ownerFilter').value;
+            const week = document.getElementById('weekFilter').value;
+            const status = document.getElementById('statusFilter').value;
+
+            let filtered = risks.filter(r => {
+                const matchesSearch = r.title.toLowerCase().includes(search) ||
+                                      r.statement.toLowerCase().includes(search) ||
+                                      r.id.toLowerCase().includes(search) ||
+                                      r.rootCause.toLowerCase().includes(search) ||
+                                      r.impactedObjectives.toLowerCase().includes(search);
+
+                const matchesCat = category === 'ALL' || r.category === category;
+                const matchesSev = severity === 'ALL' || r.level === severity;
+                const matchesOwner = owner === 'ALL' || r.owner === owner;
+                const matchesWeek = week === 'ALL' || r.week === week;
+                const matchesStatus = status === 'ALL' || r.status === status;
+
+                return matchesSearch && matchesCat && matchesSev && matchesOwner && matchesWeek && matchesStatus;
+            });
+
+            filtered.sort((a, b) => {
+                if (sortBy === 'SEVERITY_DESC') return b.score - a.score;
+                if (sortBy === 'SEVERITY_ASC') return a.score - b.score;
+                if (sortBy === 'WEEK_ASC') return a.weekNum - b.weekNum;
+                if (sortBy === 'ID_ASC') return a.id.localeCompare(b.id);
+                return 0;
+            });
+
+            renderRisks(filtered);
+        }
+
+        /* ---- Activity Hub ---- */
+        function populateActivityOwners() {
+            const owners = [...new Set(resolutionActivities.map(a => a.owner))];
+            const select = document.getElementById('actOwnerFilter');
+            owners.forEach(o => select.innerHTML += `<option value="${o}">${o}</option>`);
+        }
+
+        function renderActivities(data) {
+            const body = document.getElementById('activityTableBody');
+            body.innerHTML = '';
+
+            document.getElementById('act-total').innerText = resolutionActivities.length;
+            document.getElementById('act-decisions').innerText = resolutionActivities.filter(a => a.kind === 'Decision Request').length;
+            document.getElementById('act-tasks').innerText = resolutionActivities.filter(a => a.kind === 'Action Task').length;
+            document.getElementById('act-spofs').innerText = resolutionActivities.filter(a => a.kind === 'Dependency / SPOF').length;
+            document.getElementById('act-validations').innerText = resolutionActivities.filter(a => a.kind === 'Assumption Validation').length;
+
+            data.forEach(item => {
+                body.innerHTML += `
+                    <tr>
+                        <td><span class="type-badge ${item.typeClass}">${item.kind}</span></td>
+                        <td><strong>${item.title}</strong></td>
+                        <td style="color:#475569;">${item.desc}</td>
+                        <td>${item.owner}</td>
+                        <td><strong>${item.target}</strong></td>
+                        <td><span class="risk-tag">${item.risk}</span></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function filterActivities() {
+            const typeVal = document.getElementById('typeFilter').value;
+            const ownerVal = document.getElementById('actOwnerFilter').value;
+            const weekVal = document.getElementById('actWeekFilter').value;
+
+            let filtered = resolutionActivities.filter(a => {
+                const matchType = typeVal === 'ALL' || a.kind === typeVal;
+                const matchOwner = ownerVal === 'ALL' || a.owner === ownerVal;
+                const matchWeek = weekVal === 'ALL' || a.target === weekVal;
+                return matchType && matchOwner && matchWeek;
+            });
+
+            renderActivities(filtered);
+        }
+
+        // Initialize both tabs' data on load
+        setupDropdowns();
+        filterRisks();
+        populateActivityOwners();
+        renderActivities(resolutionActivities);
+    </script>
+</body>
+</html>
