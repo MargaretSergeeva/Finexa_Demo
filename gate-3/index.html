@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finexa · Gate 3 — Review Drafts</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .fade-in { animation: fadeIn 0.15s ease-out; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(3px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex">
+
+  <div id="toast" class="fixed top-4 right-4 z-50 hidden">
+    <div class="bg-slate-900 text-white px-4 py-2.5 rounded-lg shadow-lg text-sm flex items-center gap-2">
+      <span id="toast-icon">✓</span>
+      <span id="toast-msg"></span>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="w-14 bg-slate-800 text-white flex flex-col items-center py-4 gap-5 flex-shrink-0">
+    <div class="text-xl font-bold">≡</div>
+    <button class="p-2 rounded hover:bg-slate-700 opacity-50">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"/></svg>
+    </button>
+    <button class="p-2 rounded bg-violet-600">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+    </button>
+  </aside>
+
+  <div class="flex-1 flex flex-col min-w-0">
+    <header class="bg-white border-b border-slate-200 px-5 py-3 flex items-center justify-between flex-shrink-0">
+      <div class="flex items-center gap-3">
+        <h1 class="text-base font-semibold text-slate-800">Finexa · Feedback Intelligence</h1>
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-violet-100 text-violet-800">Gate 3 · Review Drafts</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <span id="waiting-count" class="text-sm text-slate-500">3 drafts waiting</span>
+        <div class="w-8 h-8 rounded-full bg-violet-700 text-white flex items-center justify-center text-sm font-medium">P</div>
+      </div>
+    </header>
+
+    <main class="flex-1 flex overflow-hidden">
+
+      <!-- LEFT: Draft list -->
+      <div class="w-full max-w-sm border-r border-slate-200 bg-white flex flex-col">
+        <div class="px-4 py-3 border-b border-slate-100">
+          <h2 class="text-sm font-semibold text-slate-700">Jira Drafts</h2>
+          <p class="text-xs text-slate-500">Approved opportunities · ready for review</p>
+        </div>
+        <div class="flex-1 overflow-y-auto" id="draft-list"></div>
+      </div>
+
+      <!-- RIGHT: Detail -->
+      <div class="flex-1 bg-slate-50 overflow-y-auto">
+        <div id="empty-state" class="h-full flex items-center justify-center text-slate-400 text-sm">
+          Select a draft to review
+        </div>
+        <div id="detail-content" class="hidden p-6 max-w-3xl fade-in"></div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const drafts = [
+      {
+        id: 'DRAFT-001',
+        opportunity_id: 'OP-011',
+        title: 'Expose failure reason in payment details',
+        status: 'pending_draft',
+        complexity: 5,
+        suggested_complexity: 5,
+        score: 0.87,
+        regression: true,
+        opportunity_title: 'Payment failures lack clear reasons in merchant UI',
+        problem_statement: 'Merchants currently only see a generic “Payment failed” message. They cannot understand the root cause (insufficient funds, expired card, 3DS failure, etc.) without contacting support or using internal tools.',
+        user_story: 'As a merchant, I want to see the specific reason a payment failed and a suggested next action, so that I can resolve the issue myself or guide my customer without opening a support ticket.',
+        acceptance_criteria: [
+          'Payment detail view shows the decline code and a human-readable reason',
+          'A short “What to do next” suggestion is displayed for the top 8 decline types',
+          'The information is available for both one-time and recurring payments',
+          'No sensitive card data is exposed'
+        ],
+        theme: 'Payment status transparency',
+        workflow: 'Payment status',
+        feature_area: 'payments_status',
+        insights: 9,
+        segments: '4 Enterprise · 5 SMB'
+      },
+      {
+        id: 'DRAFT-002',
+        opportunity_id: 'OP-019',
+        title: 'Improve error messaging in checkout',
+        status: 'pending_draft',
+        complexity: 3,
+        suggested_complexity: 3,
+        score: 0.74,
+        regression: false,
+        opportunity_title: 'Generic error messages in checkout flow',
+        problem_statement: 'During checkout, customers and merchants see only generic error messages when a payment method is declined. This leads to abandoned checkouts and unnecessary support contacts.',
+        user_story: 'As a customer (or merchant assisting a customer), I want clear, actionable error messages at checkout so I know how to fix the payment problem and complete the purchase.',
+        acceptance_criteria: [
+          'Replace generic “Payment failed” with specific messages for the top 5 decline reasons',
+          'Messages include a short recovery action (e.g. “Try another card” or “Contact your bank”)',
+          'Works on both desktop and mobile checkout'
+        ],
+        theme: 'Checkout error clarity',
+        workflow: 'Checkout',
+        feature_area: 'checkout_flow',
+        insights: 6,
+        segments: '2 Enterprise · 4 SMB'
+      },
+      {
+        id: 'DRAFT-003',
+        opportunity_id: 'OP-024',
+        title: 'Add payment method health indicators to dashboard',
+        status: 'pending_draft',
+        complexity: 8,
+        suggested_complexity: 8,
+        score: 0.61,
+        regression: false,
+        opportunity_title: 'Merchant dashboard lacks payment method health indicators',
+        problem_statement: 'Merchants have no visibility into the health of their payment methods (e.g. high decline rates, expiring cards, 3DS friction). They only discover problems when volume drops or support tickets rise.',
+        user_story: 'As a merchant, I want to see health indicators for each payment method on my dashboard so I can proactively fix issues before they impact revenue.',
+        acceptance_criteria: [
+          'Dashboard shows decline rate, 3DS success rate, and expiry warnings per payment method',
+          'Indicators update at least daily',
+          'Clicking an indicator opens a detail view with recent failed payments (de-identified)'
+        ],
+        theme: 'Dashboard observability',
+        workflow: 'Merchant dashboard',
+        feature_area: 'merchant_dashboard',
+        insights: 4,
+        segments: '1 Enterprise · 3 SMB'
+      }
+    ];
+
+    let selectedId = null;
+    let confirmed = new Set();
+    let complexityOverrides = {};
+
+    function toast(msg, icon = '✓') {
+      document.getElementById('toast-msg').textContent = msg;
+      document.getElementById('toast-icon').textContent = icon;
+      const t = document.getElementById('toast');
+      t.classList.remove('hidden');
+      setTimeout(() => t.classList.add('hidden'), 2200);
+    }
+
+    function renderList() {
+      const list = document.getElementById('draft-list');
+      list.innerHTML = drafts.map((d, i) => {
+        const isOpen = d.id === selectedId;
+        const isConfirmed = confirmed.has(d.id);
+        return `
+          <button onclick="openDraft('${d.id}')"
+            class="w-full text-left px-4 py-3 border-b border-slate-100 transition
+              ${isOpen ? 'bg-violet-50 border-l-4 border-l-violet-600' : 'hover:bg-slate-50 border-l-4 border-l-transparent'}
+              ${isConfirmed ? 'opacity-55' : ''}">
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="text-xs font-semibold text-slate-400">#${i+1}</span>
+                  <span class="text-sm font-medium text-slate-900">${d.id}</span>
+                  ${d.regression ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-100 text-amber-800">Regression</span>' : ''}
+                  ${isConfirmed ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-violet-100 text-violet-800">Confirmed</span>' : ''}
+                </div>
+                <div class="text-xs text-slate-700 font-medium mt-0.5 line-clamp-2">${d.title}</div>
+                <div class="text-[11px] text-slate-400 mt-1">from ${d.opportunity_id} · ${d.insights} insights · score ${d.score.toFixed(2)}</div>
+              </div>
+              <div class="text-right flex-shrink-0">
+                <div class="text-sm font-semibold text-slate-700">${complexityOverrides[d.id] ?? d.complexity} pts</div>
+                <div class="text-[10px] text-slate-400">complexity</div>
+              </div>
+            </div>
+          </button>
+        `;
+      }).join('');
+
+      const waiting = drafts.filter(d => !confirmed.has(d.id)).length;
+      document.getElementById('waiting-count').textContent = waiting + ' drafts waiting';
+    }
+
+    function openDraft(id) {
+      selectedId = id;
+      renderList();
+      const d = drafts.find(x => x.id === id);
+      document.getElementById('empty-state').classList.add('hidden');
+      const panel = document.getElementById('detail-content');
+      panel.classList.remove('hidden');
+
+      const isConfirmed = confirmed.has(d.id);
+      const currentComplexity = complexityOverrides[d.id] ?? d.complexity;
+
+      panel.innerHTML = `
+        <!-- Draft header -->
+        <div class="mb-6">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <div class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Jira Draft</div>
+              <h2 class="text-lg font-semibold text-slate-900">${d.id} · ${d.title}</h2>
+            </div>
+            <span class="text-xs px-2.5 py-0.5 rounded-full flex-shrink-0 ${isConfirmed ? 'bg-violet-100 text-violet-800' : 'bg-amber-100 text-amber-800'}">
+              ${isConfirmed ? 'confirmed_draft' : 'pending_draft'}
+            </span>
+          </div>
+          <div class="mt-3 text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Linked Opportunity</div>
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <div class="text-sm text-violet-700 font-medium">${d.opportunity_id}</div>
+              <div class="text-sm text-slate-800 mt-0.5">${d.opportunity_title}</div>
+            </div>
+            <div class="text-right flex-shrink-0">
+              <div class="text-2xl font-bold text-emerald-600">${d.score.toFixed(2)}</div>
+              <div class="text-xs text-slate-400">score</div>
+            </div>
+          </div>
+          <div class="mt-2 flex flex-wrap gap-2 text-xs">
+            <span class="px-2 py-0.5 bg-slate-100 rounded-full text-slate-600">${d.theme}</span>
+            <span class="px-2 py-0.5 bg-slate-100 rounded-full text-slate-600">${d.workflow}</span>
+            <span class="px-2 py-0.5 bg-slate-100 rounded-full text-slate-600">${d.feature_area}</span>
+            <span class="px-2 py-0.5 bg-slate-100 rounded-full text-slate-600">${d.insights} insights</span>
+            <span class="px-2 py-0.5 bg-slate-100 rounded-full text-slate-600">${d.segments}</span>
+            ${d.regression ? '<span class="px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full">Regression</span>' : ''}
+          </div>
+        </div>
+
+        <!-- Draft content -->
+        <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-5">
+          <div>
+            <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Title</div>
+            <div class="text-sm font-medium text-slate-900">${d.title}</div>
+          </div>
+
+          <div>
+            <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Problem statement</div>
+            <p class="text-sm text-slate-700 leading-relaxed">${d.problem_statement}</p>
+          </div>
+
+          <div>
+            <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">User story</div>
+            <p class="text-sm text-slate-700 leading-relaxed">${d.user_story}</p>
+          </div>
+
+          <div>
+            <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Acceptance criteria</div>
+            <ul class="space-y-1.5">
+              ${d.acceptance_criteria.map(c => `
+                <li class="flex items-start gap-2 text-sm text-slate-700">
+                  <span class="text-violet-500 mt-0.5">•</span>
+                  <span>${c}</span>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+
+          <!-- Complexity -->
+          <div class="pt-2 border-t border-slate-100">
+            <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Complexity (story points)</div>
+            <div class="flex items-center gap-3">
+              <div class="flex gap-1.5">
+                ${[1,2,3,5,8,13].map(p => `
+                  <button onclick="setComplexity('${d.id}', ${p})"
+                    class="w-10 h-10 rounded-lg text-sm font-medium transition
+                      ${(complexityOverrides[d.id] ?? d.complexity) === p
+                        ? 'bg-violet-600 text-white'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+                    ${p}
+                  </button>
+                `).join('')}
+              </div>
+              <span class="text-xs text-slate-400">AI suggested: ${d.suggested_complexity}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="mt-6 flex flex-wrap gap-3">
+          ${isConfirmed ? `
+            <div class="px-4 py-2.5 bg-violet-100 text-violet-800 text-sm font-medium rounded-lg">
+              ✓ Draft confirmed · ready for sprint selection
+            </div>
+            <button onclick="unconfirm('${d.id}')" class="px-4 py-2.5 text-sm text-slate-500 hover:text-slate-700">
+              Undo
+            </button>
+          ` : `
+            <button onclick="confirmDraft('${d.id}')"
+              class="px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium rounded-lg shadow-sm">
+              Confirm draft & complexity
+            </button>
+            <button onclick="toast('Edit mode would open here', '✎')"
+              class="px-4 py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-sm font-medium rounded-lg">
+              Edit draft
+            </button>
+            <button onclick="toast('Sent back to drafting agent', '↺')"
+              class="px-4 py-2.5 text-sm text-slate-500 hover:text-red-600">
+              Send back
+            </button>
+          `}
+        </div>
+      `;
+    }
+
+    function setComplexity(id, points) {
+      complexityOverrides[id] = points;
+      renderList();
+      openDraft(id);
+      toast(`Complexity set to ${points} pts`);
+    }
+
+    function confirmDraft(id) {
+      confirmed.add(id);
+      renderList();
+      openDraft(id);
+      toast(`${id} confirmed`);
+    }
+
+    function unconfirm(id) {
+      confirmed.delete(id);
+      renderList();
+      openDraft(id);
+      toast(`${id} returned to review`, '↺');
+    }
+
+    renderList();
+  </script>
+</body>
+</html>

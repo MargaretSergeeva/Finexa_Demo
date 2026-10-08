@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Payments Pilot · 12-Week Roadmap</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+  :root{
+    --bg:#0e1729;--panel:#131f36;--ink:#e8eefc;--muted:#8296b8;
+    --grid:#22304d;--rule:#2c3d5e;
+    --foundation:#38bdf8;--pilot:#34d399;--assess:#fbbf24;
+    --milestone:#e879a6;--today:#fb7185;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1180px;margin:0 auto;padding:20px 28px 32px;}
+  header{margin-bottom:16px;}
+  .eyebrow{font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;
+    letter-spacing:.18em;text-transform:uppercase;color:var(--pilot);margin:0 0 8px;}
+  h1{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;
+    letter-spacing:-.01em;margin:0;line-height:1.15;}
+  .sub{font-size:14px;color:var(--muted);margin:8px 0 0;}
+  .board{background:var(--panel);border:1px solid var(--rule);border-radius:16px;
+    padding:8px;overflow-x:auto;box-shadow:0 20px 40px -24px rgba(0,0,0,.6);}
+  svg{display:block;min-width:900px;}
+  .legend{display:flex;gap:22px;flex-wrap:wrap;margin-top:18px;font-size:12.5px;color:var(--muted);}
+  .legend span{display:inline-flex;align-items:center;gap:7px;}
+  .sw{width:13px;height:13px;border-radius:3px;display:inline-block;}
+  .dia{width:12px;height:12px;display:inline-block;transform:rotate(45deg);border-radius:2px;}
+  .foot{font-size:12px;color:var(--muted);margin-top:16px;}
+  .tick{fill:var(--muted);font-size:11px;font-family:'Space Grotesk',sans-serif;}
+  .wk{fill:#5f7396;font-size:10px;}
+  .lane-label{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:12.5px;}
+  .task{fill:var(--ink);font-size:12.5px;}
+  .ms-label{fill:var(--ink);font-size:12px;font-style:italic;}
+  .scrub-hit{cursor:ew-resize;}
+  .scrub-line{pointer-events:none;}
+  .scrub-pill{fill:var(--today);}
+  .scrub-pill-text{fill:#0e1729;font-size:11px;font-weight:600;font-family:'Space Grotesk',sans-serif;}
+  .readout{margin-top:18px;background:var(--panel);border:1px solid var(--rule);
+    border-radius:14px;padding:16px 18px;}
+  .readout-head{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+  .readout-date{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;color:var(--today);}
+  .readout-today{margin-left:auto;font:inherit;font-size:12.5px;font-weight:500;color:var(--ink);
+    background:transparent;border:1px solid var(--rule);border-radius:8px;padding:5px 11px;cursor:pointer;}
+  .readout-today:hover{background:rgba(255,255,255,0.04);}
+  .ro-group-label{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--muted);margin:10px 0 6px;}
+  .ro-item{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13.5px;}
+  .ro-dot{width:9px;height:9px;border-radius:2px;flex:none;}
+  .ro-dia{width:9px;height:9px;flex:none;transform:rotate(45deg);border-radius:1px;background:var(--milestone);}
+  .ro-meta{margin-left:auto;font-size:12px;color:var(--muted);}
+  .ro-empty{font-size:13.5px;color:var(--muted);padding:4px 0;}
+  @media (max-width:640px){h1{font-size:21px;}.wrap{padding:22px 14px 40px;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Finexa · Feedback Intelligence</p>
+    <h1>Payments Pilot — 12-Week Implementation Roadmap</h1>
+    <p class="sub">Foundation &rarr; Pilot Execution &rarr; Assessment · 25 Aug &ndash; 13 Nov 2026</p>
+  </header>
+
+  <div class="board"><svg id="chart" xmlns="http://www.w3.org/2000/svg"></svg></div>
+
+  <div class="readout" id="readout">
+    <div class="readout-head">
+      <span class="readout-date" id="ro-date">—</span>
+      <button class="readout-today" id="ro-today" type="button">Jump to today</button>
+    </div>
+    <div class="readout-body" id="ro-body"></div>
+  </div>
+
+  <div class="legend">
+    <span><span class="sw" style="background:var(--foundation)"></span> Foundation</span>
+    <span><span class="sw" style="background:var(--pilot)"></span> Pilot Execution</span>
+    <span><span class="sw" style="background:var(--assess)"></span> Assessment</span>
+    <span><span class="dia" style="background:var(--milestone)"></span> Milestone</span>
+    <span><span class="sw" style="background:var(--today);width:3px;border-radius:1px;"></span> Today</span>
+  </div>
+  <p class="foot">Drag the red line (or click anywhere on the chart) to any date — the panel below lists what's active then. Self-contained page &mdash; no login or network needed.</p>
+</div>
+
+<script>
+const PHASES = [
+  { name:'Weeks 1\u20134 \u00b7 Foundation', color:'var(--foundation)' },
+  { name:'Weeks 5\u201310 \u00b7 Pilot Execution', color:'var(--pilot)' },
+  { name:'Weeks 11\u201312 \u00b7 Assessment', color:'var(--assess)' },
+];
+const TASKS = [
+  { p:0, label:'DLP rules & Works Council sign-off', start:'2026-08-25', days:7 },
+  { p:0, label:'Baseline capture (workflow + AI)',   start:'2026-08-25', days:12 },
+  { p:0, label:'BigQuery schema + Appsmith setup',   start:'2026-09-01', days:10 },
+  { p:0, label:'Shadow mode processing',             start:'2026-09-08', days:10 },
+  { p:0, label:'Tag alignment \u2265 85% achieved',  start:'2026-09-18', ms:true },
+  { p:0, label:'Foundation complete \u00b7 System frozen', start:'2026-09-19', ms:true },
+  { p:1, label:'Live feedback ingestion',            start:'2026-09-22', days:35 },
+  { p:1, label:'Gate 1 \u00b7 Insight review & linking', start:'2026-09-22', days:35 },
+  { p:1, label:'Gate 2 \u00b7 Opportunity prioritisation', start:'2026-09-29', days:28 },
+  { p:1, label:'Gate 3 \u00b7 Jira draft approval',  start:'2026-10-06', days:21 },
+  { p:1, label:'RAG hit rate > 80%',                 start:'2026-10-10', ms:true },
+  { p:1, label:'Mid-pilot health check',             start:'2026-10-17', ms:true },
+  { p:1, label:'Gate 3 acceptance > 85%',            start:'2026-10-30', ms:true },
+  { p:1, label:'Pilot execution complete',           start:'2026-10-31', ms:true },
+  { p:2, label:'Results vs baseline analysis',       start:'2026-11-03', days:7 },
+  { p:2, label:'Final stakeholder survey',           start:'2026-11-05', days:5 },
+  { p:2, label:'Full performance & ROI report',      start:'2026-11-10', days:3 },
+  { p:2, label:'Proceed / Iterate / Stop decision',  start:'2026-11-13', ms:true },
+];
+
+const DAY = 864e5;
+const domainStart = new Date('2026-08-24');
+const domainEnd   = new Date('2026-11-16');
+const totalDays = Math.round((domainEnd - domainStart)/DAY);
+
+const padL = 300, padR = 40, padT = 64, rowH = 23, laneGap = 14;
+const plotW = 860;
+const W = padL + plotW + padR;
+const x = d => padL + (Math.round((new Date(d)-domainStart)/DAY)/totalDays)*plotW;
+
+let y = padT, svgParts = [];
+
+let gl = '';
+for(let i=0;i<=totalDays;i+=7){
+  const gx = padL + (i/totalDays)*plotW;
+  const dt = new Date(domainStart.getTime()+i*DAY);
+  const lbl = dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
+  gl += '<line x1="'+gx+'" y1="'+(padT-4)+'" x2="'+gx+'" y2="__H__" stroke="var(--grid)" stroke-width="1"/>';
+  gl += '<text class="tick" x="'+gx+'" y="18" text-anchor="middle">'+lbl+'</text>';
+  gl += '<text class="wk" x="'+gx+'" y="32" text-anchor="middle">wk '+(i/7+1)+'</text>';
+}
+// separator rule between axis header and the lanes
+gl += '<line x1="0" y1="42" x2="'+W+'" y2="42" stroke="var(--rule)" stroke-width="1"/>';
+
+const headH = 20;
+PHASES.forEach((ph,pi)=>{
+  const list = TASKS.filter(t=>t.p===pi);
+  const laneH = headH + list.length*rowH + 10;
+  svgParts.push('<rect x="0" y="'+(y-6)+'" width="'+W+'" height="'+laneH+'" fill="'+(pi%2?'rgba(255,255,255,0.015)':'transparent')+'"/>');
+  svgParts.push('<rect x="0" y="'+(y-6)+'" width="4" height="'+laneH+'" fill="'+ph.color+'" rx="2"/>');
+  svgParts.push('<text class="lane-label" x="16" y="'+(y+12)+'" fill="'+ph.color+'">'+esc(ph.name)+'</text>');
+  y += headH;
+  list.forEach(t=>{
+    const cy = y + rowH/2;
+    if(t.ms){
+      const mx = x(t.start), s = 8;
+      svgParts.push('<path d="M '+mx+' '+(cy-s)+' L '+(mx+s)+' '+cy+' L '+mx+' '+(cy+s)+' L '+(mx-s)+' '+cy+' Z" fill="var(--milestone)" stroke="#0e1729" stroke-width="1.5"/>');
+      svgParts.push('<text class="ms-label" x="'+(padL-16)+'" y="'+(cy+4)+'" text-anchor="end">'+esc(t.label)+'</text>');
+    } else {
+      const bx = x(t.start), bw = Math.max(6, x(addDays(t.start,t.days))-bx);
+      svgParts.push('<rect x="'+bx+'" y="'+(cy-8)+'" width="'+bw+'" height="16" rx="5" fill="'+ph.color+'" opacity="0.9"/>');
+      svgParts.push('<text class="task" x="'+(padL-16)+'" y="'+(cy+4)+'" text-anchor="end">'+esc(t.label)+'</text>');
+    }
+    y += rowH;
+  });
+  y += laneGap;
+});
+
+const H = y + 12;
+
+const svg = document.getElementById('chart');
+svg.setAttribute('viewBox','0 0 '+W+' '+H);
+svg.setAttribute('width','100%');
+const baseSvg = gl.split('__H__').join(H-12) + svgParts.join('');
+
+// ---- scrubber state ----
+const PHASE_COLORS = ['#38bdf8','#34d399','#fbbf24'];
+const scrubTop = padT-8, scrubBot = H-12;
+const dateFmt = d => new Date(d).toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
+const clampDate = d => Math.min(domainEnd.getTime(), Math.max(domainStart.getTime()+DAY, d));
+
+const realToday = new Date().toISOString().slice(0,10);
+let curMs = clampDate(new Date(realToday) >= domainStart ? new Date(realToday).getTime() : new Date('2026-08-25').getTime());
+
+function isoOf(ms){ return new Date(ms).toISOString().slice(0,10); }
+
+function scrubberSvg(){
+  const iso = isoOf(curMs);
+  const sx = x(iso);
+  const label = new Date(curMs).toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
+  const pillW = 62, pillH = 18, pillY = scrubTop-2;
+  let px = sx - pillW/2;
+  px = Math.max(padL-30, Math.min(px, padL+plotW+30-pillW));
+  return ''+
+    '<line class="scrub-line" x1="'+sx+'" y1="'+scrubTop+'" x2="'+sx+'" y2="'+scrubBot+'" stroke="var(--today)" stroke-width="2"/>'+
+    '<rect class="scrub-pill" x="'+px+'" y="'+pillY+'" width="'+pillW+'" height="'+pillH+'" rx="9"/>'+
+    '<text class="scrub-pill-text" x="'+(px+pillW/2)+'" y="'+(pillY+13)+'" text-anchor="middle">'+label+'</text>'+
+    // wide invisible hit area for dragging
+    '<rect class="scrub-hit" x="'+(sx-10)+'" y="'+scrubTop+'" width="20" height="'+(scrubBot-scrubTop)+'" fill="transparent"/>';
+}
+
+function activeOn(iso){
+  const t = new Date(iso).getTime();
+  const running = [], milestones = [];
+  TASKS.forEach(k=>{
+    if(k.ms){
+      if(isoOf(new Date(k.start).getTime()) === iso) milestones.push(k);
+    } else {
+      const s = new Date(k.start).getTime();
+      const e = new Date(addDays(k.start,k.days)).getTime();
+      if(t >= s && t < e){
+        const dayIn = Math.round((t-s)/DAY)+1;
+        running.push({ ...k, dayIn, total:k.days });
+      }
+    }
+  });
+  return { running, milestones };
+}
+
+function renderReadout(){
+  const iso = isoOf(curMs);
+  document.getElementById('ro-date').textContent = dateFmt(iso);
+  const { running, milestones } = activeOn(iso);
+  let html = '';
+  if(!running.length && !milestones.length){
+    const before = new Date(iso) < new Date('2026-08-25');
+    html = '<div class="ro-empty">'+(before
+      ? 'Before kickoff — nothing scheduled yet. Pilot starts 25 Aug.'
+      : 'Nothing scheduled on this date.')+'</div>';
+  } else {
+    if(running.length){
+      html += '<div class="ro-group-label">In progress</div>';
+      running.forEach(k=>{
+        html += '<div class="ro-item"><span class="ro-dot" style="background:'+PHASE_COLORS[k.p]+'"></span>'+
+          esc(k.label)+'<span class="ro-meta">day '+k.dayIn+' of '+k.total+'</span></div>';
+      });
+    }
+    if(milestones.length){
+      html += '<div class="ro-group-label">Milestone due</div>';
+      milestones.forEach(k=>{
+        html += '<div class="ro-item"><span class="ro-dia"></span>'+esc(k.label)+'</div>';
+      });
+    }
+  }
+  document.getElementById('ro-body').innerHTML = html;
+}
+
+function render(){
+  svg.innerHTML = baseSvg + scrubberSvg();
+  renderReadout();
+}
+render();
+
+// ---- dragging ----
+function msFromClientX(clientX){
+  const rect = svg.getBoundingClientRect();
+  const svgX = (clientX - rect.left) / rect.width * W;      // map to viewBox units
+  const frac = (svgX - padL) / plotW;
+  const day = Math.round(frac * totalDays);
+  return clampDate(domainStart.getTime() + day*DAY);
+}
+let dragging = false;
+function startDrag(e){ dragging = true; move(e); e.preventDefault(); }
+function move(e){
+  if(!dragging) return;
+  const cx = (e.touches ? e.touches[0].clientX : e.clientX);
+  curMs = msFromClientX(cx);
+  render();
+}
+function endDrag(){ dragging = false; }
+// click-to-place anywhere on the chart, plus drag
+svg.addEventListener('mousedown', startDrag);
+svg.addEventListener('touchstart', startDrag, {passive:false});
+window.addEventListener('mousemove', move);
+window.addEventListener('touchmove', move, {passive:false});
+window.addEventListener('mouseup', endDrag);
+window.addEventListener('touchend', endDrag);
+
+document.getElementById('ro-today').addEventListener('click', ()=>{
+  curMs = clampDate(new Date(realToday) >= domainStart ? new Date(realToday).getTime() : new Date('2026-08-25').getTime());
+  render();
+});
+
+function addDays(d,n){ return new Date(new Date(d).getTime()+n*DAY).toISOString().slice(0,10); }
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+</script>
+</body>
+</html>
